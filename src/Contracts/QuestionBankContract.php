@@ -2,6 +2,10 @@
 
 namespace Cerpus\QuestionBankClient\Contracts;
 
+use Cerpus\QuestionBankClient\DataObjects\AnswerDataObject;
+use Cerpus\QuestionBankClient\DataObjects\QuestionDataObject;
+use Cerpus\QuestionBankClient\DataObjects\QuestionsetDataObject;
+
 /**
  * Interface QuestionBankContract
  * @package Cerpus\QuestionBankClient\Contracts
@@ -9,4 +13,33 @@ namespace Cerpus\QuestionBankClient\Contracts;
 interface QuestionBankContract
 {
 
+    public function getQuestionsets();
+
+    public function getQuestionset($questionsetId);
+
+    public function createQuestionset(QuestionsetDataObject $questionset);
+
+    public function updateQuestionset(QuestionsetDataObject $questionset);
+
+    public function deleteQuestionset($id);
+
+    public function getQuestionsetsByQuestion($questionId);
+
+    public function getQuestion($questionId);
+
+    public function createQuestion(QuestionDataObject $question);
+
+    public function updateQuestion(QuestionDataObject $question);
+
+    public function deleteQuestion($questionId);
+
+    public function getAnswer($answerId);
+
+    public function getAnswersByQuestion($questionId);
+
+    public function createAnswer(AnswerDataObject $answer);
+
+    public function updateAnswer(AnswerDataObject $answer);
+
+    public function deleteAnswer($answerId);
 }

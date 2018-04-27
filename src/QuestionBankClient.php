@@ -2,7 +2,7 @@
 
 namespace Cerpus\QuestionBankClient;
 
-use Cerpus\QuestionBankClient\Contracts\QuestionBankClientContract;
+use Cerpus\QuestionBankClient\Contracts\QuestionBankContract;
 use Illuminate\Support\Facades\Facade;
 
 /**
@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Facade;
  */
 class QuestionBankClient extends Facade
 {
+
+    protected $defer = true;
+
     /**
      * @var string
      */
@@ -21,7 +24,7 @@ class QuestionBankClient extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return QuestionBankClientContract::class;
+        return QuestionBankContract::class;
     }
 
     /**
