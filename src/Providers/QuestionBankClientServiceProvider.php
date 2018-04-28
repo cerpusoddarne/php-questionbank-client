@@ -25,8 +25,10 @@ class QuestionBankClientServiceProvider extends ServiceProvider
     {
 
         $this->app->bind(QuestionBankClientContract::class, function ($app) {
-            $questionbankClient = $app['config']->get("questionbank-client");
-            $client = strtolower($questionbankClient['adapter']['client']);
+            $questionbankClientConfig = $app['config']->get(QuestionBankClient::$alias);
+            $adapter = $questionbankClientConfig['default'];
+            $adapterConfig = $questionbankClientConfig["adapters"][$adapter];
+            $client = strtolower($adapterConfig['auth-client']);
             /** @var QuestionBankClientContract $clientClass */
             switch ($client) {
                 case "oauth1":
@@ -41,19 +43,21 @@ class QuestionBankClientServiceProvider extends ServiceProvider
             }
 
             return $clientClass::getClient(OauthSetup::create([
-                'coreUrl' => $questionbankClient['core']['url'],
-                'key' => $questionbankClient['core']['key'],
-                'secret' => $questionbankClient['core']['secret'],
-                'authUrl' => $questionbankClient['auth']['url'],
-                'token' => $questionbankClient['core']['token'],
-                'token_secret' => $questionbankClient['core']['token_secret'],
+                'baseUrl' => $adapterConfig['base-url'],
+                'authUrl' => $adapterConfig['auth-url'],
+                'authUser' => $adapterConfig['auth-user'],
+                'authSecret' => $adapterConfig['auth-secret'],
+                'authToken' => $adapterConfig['auth-token'],
+                'authTokenSecret' => $adapterConfig['auth-token_secret'],
             ]));
         });
 
         $this->app->bind(QuestionBankContract::class, function ($app) {
-            $questionbankClient = $app['config']->get("questionbank-client");
             $client = $app->make(QuestionBankClientContract::class);
-            return new $questionbankClient['adapter']['current']($client);
+            $questionbankClientConfig = $app['config']->get(QuestionBankClient::$alias);
+            $adapter = $questionbankClientConfig['default'];
+            $adapterConfig = $questionbankClientConfig["adapters"][$adapter];
+            return new $adapterConfig['handler']($client);
         });
 
         $this->mergeConfigFrom(QuestionBankClient::getConfigPath(), QuestionBankClient::$alias);
@@ -66,7 +70,10 @@ class QuestionBankClientServiceProvider extends ServiceProvider
      */
     public function provides()
     {
-        return [QuestionBankContract::class];
+        return [
+            QuestionBankContract::class,
+            QuestionBankClientContract::class,
+        ];
     }
 
 }

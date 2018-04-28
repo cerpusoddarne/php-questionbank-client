@@ -3,8 +3,12 @@
 namespace Cerpus\QuestionBankClient\DataObjects;
 
 
+use Cerpus\QuestionBankClient\Traits\CreateTrait;
+
 class QuestionDataObject
 {
+    use CreateTrait;
+
     public $text, $questionSetId, $metadata, $id;
 
     private $answers;
@@ -17,7 +21,7 @@ class QuestionDataObject
     /**
      * @return array
      */
-    public function getAnswers(): array
+    public function getAnswers()
     {
         return $this->answers;
     }

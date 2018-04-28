@@ -3,8 +3,11 @@
 namespace Cerpus\QuestionBankClient\DataObjects;
 
 
+use Cerpus\QuestionBankClient\Traits\CreateTrait;
+
 class QuestionsetDataObject
 {
+    use CreateTrait;
 
     public $title, $id, $metadata;
 

@@ -13,9 +13,9 @@ use Cerpus\QuestionBankClient\DataObjects\QuestionsetDataObject;
 interface QuestionBankContract
 {
 
-    public function getQuestionsets();
+    public function getQuestionsets(): array;
 
-    public function getQuestionset($questionsetId);
+    public function getQuestionset($questionsetId) : QuestionsetDataObject;
 
     public function createQuestionset(QuestionsetDataObject $questionset);
 

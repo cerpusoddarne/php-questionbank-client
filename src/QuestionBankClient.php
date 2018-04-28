@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * Class QuestionBankClient
  * @package Cerpus\QuestionBankClient
+ *
  */
 class QuestionBankClient extends Facade
 {
@@ -40,6 +41,6 @@ class QuestionBankClient extends Facade
      */
     public static function getConfigPath()
     {
-        return self::getBasePath() . '/src/Config/questionbank-client.php';
+        return self::getBasePath() . '/src/Config/' . self::$alias . '.php';
     }
 }
