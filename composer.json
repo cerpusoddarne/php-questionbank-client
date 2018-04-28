@@ -17,5 +17,10 @@
             "name": "Thomas Horn Sivertsen",
             "email": "thomass@cerpus.com"
         }
-    ]
+    ],
+  "autoload": {
+    "psr-4": {
+      "Cerpus\\QuestionBankClient\\": "src"
+    }
+  }
 }
