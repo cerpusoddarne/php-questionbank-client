@@ -23,7 +23,7 @@ interface QuestionBankContract
 
     public function deleteQuestionset($id);
 
-    public function getQuestionsetsByQuestion($questionId);
+    public function getQuestions($questionsetId);
 
     public function getQuestion($questionId);
 

@@ -362,9 +362,15 @@ class QuestionBankAdapter implements QuestionBankContract
         // TODO: Implement deleteQuestionset() method.
     }
 
-    public function getQuestionsetsByQuestion($questionId)
+    public function getQuestions($questionsetId)
     {
-        // TODO: Implement getQuestionsetsByQuestion() method.
+        $questionset = collect($this->data)->filter(function ($questionset) use ($questionsetId){
+            return $questionset->id === $questionsetId;
+        });
+        if( $questionset->isNotEmpty()){
+            return $questionset->first()->getQuestions();
+        }
+        throw new \Exception("Could not find your questionset");
     }
 
     public function getQuestion($questionId)
