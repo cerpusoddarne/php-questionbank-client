@@ -28,8 +28,8 @@ class Oauth2Client implements QuestionBankClientContract
             'base_uri' => $config->authUrl . "/oauth/token",
         ]);
         $reauth_config = [
-            "client_id" => $config->key,
-            "client_secret" => $config->secret,
+            "client_id" => $config->authKey,
+            "client_secret" => $config->authSecret,
         ];
         $grant_type = new ClientCredentials($reauth_client, $reauth_config);
         $oauth = new OAuth2Middleware($grant_type);
@@ -38,7 +38,7 @@ class Oauth2Client implements QuestionBankClientContract
         $stack->push($oauth);
 
         $client = new Client([
-            'base_uri' => $config->coreUrl,
+            'base_uri' => $config->baseUrl,
             'handler' => $stack,
             RequestOptions::AUTH => 'oauth',
         ]);

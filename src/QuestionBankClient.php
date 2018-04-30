@@ -2,15 +2,19 @@
 
 namespace Cerpus\QuestionBankClient;
 
-use Cerpus\QuestionBankClient\Contracts\QuestionBankClientContract;
+use Cerpus\QuestionBankClient\Contracts\QuestionBankContract;
 use Illuminate\Support\Facades\Facade;
 
 /**
  * Class QuestionBankClient
  * @package Cerpus\QuestionBankClient
+ *
  */
 class QuestionBankClient extends Facade
 {
+
+    protected $defer = true;
+
     /**
      * @var string
      */
@@ -21,7 +25,7 @@ class QuestionBankClient extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return QuestionBankClientContract::class;
+        return QuestionBankContract::class;
     }
 
     /**
@@ -37,6 +41,6 @@ class QuestionBankClient extends Facade
      */
     public static function getConfigPath()
     {
-        return self::getBasePath() . '/src/Config/questionbank-client.php';
+        return self::getBasePath() . '/src/Config/' . self::$alias . '.php';
     }
 }
