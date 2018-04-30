@@ -20,7 +20,7 @@ class Client implements QuestionBankClientContract
     public static function getClient(OauthSetup $config): ClientInterface
     {
         return new \GuzzleHttp\Client([
-            'base_uri' => $config->coreUrl,
+            'base_uri' => $config->baseUrl,
         ]);
     }
 }

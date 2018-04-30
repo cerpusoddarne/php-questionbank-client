@@ -27,16 +27,16 @@ class Oauth1Client implements QuestionBankClientContract
         $stack = HandlerStack::create();
 
         $middleware = new Oauth1([
-            'consumer_key' => $config->key,
-            'consumer_secret' => $config->secret,
-            'token' => $config->token,
-            'token_secret' => $config->tokenSecret,
+            'consumer_key' => $config->authKey,
+            'consumer_secret' => $config->authSecret,
+            'token' => $config->authToken,
+            'token_secret' => $config->authTokenSecret,
         ]);
 
         $stack->push($middleware);
 
         return new Client([
-            'base_uri' => $config->coreUrl,
+            'base_uri' => $config->baseUrl,
             'handler' => $stack,
             RequestOptions::AUTH => 'oauth',
         ]);
