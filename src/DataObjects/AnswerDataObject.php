@@ -4,10 +4,11 @@ namespace Cerpus\QuestionBankClient\DataObjects;
 
 
 use Cerpus\QuestionBankClient\Traits\CreateTrait;
+use Cerpus\QuestionBankClient\Traits\MetadataTrait;
 
 class AnswerDataObject
 {
-    use CreateTrait;
+    use CreateTrait, MetadataTrait;
 
-    public $text, $id, $isCorrect, $questionId, $metadata;
+    public $text, $id, $isCorrect, $questionId;
 }
