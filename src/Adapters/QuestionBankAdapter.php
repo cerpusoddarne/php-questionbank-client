@@ -162,12 +162,16 @@ class QuestionBankAdapter implements QuestionBankContract
 
     public function createQuestion(QuestionDataObject $question): QuestionDataObject
     {
+        if (is_null($question->getMetadata())) {
+            $question->addMetadata(MetadataDataObject::create());
+        }
+
         $questionStructure = (object)[
             'title' => $question->text,
             'metadata' => $question->getMetadata(),
         ];
 
-        $response = $this->client->request("POST", sprintf(self::QUESTIONSET, $question->questionSetId), ['json' => $questionStructure]);
+        $response = $this->client->request("POST", sprintf(self::QUESTIONS, $question->questionSetId), ['json' => $questionStructure]);
         $questionResponse = \GuzzleHttp\json_decode($response->getBody());
         return $this->mapQuestionResponseToDataObject($questionResponse);
     }
@@ -202,13 +206,17 @@ class QuestionBankAdapter implements QuestionBankContract
 
     public function createAnswer(AnswerDataObject $answer): AnswerDataObject
     {
+        if (is_null($answer->getMetadata())) {
+            $answer->addMetadata(MetadataDataObject::create());
+        }
+
         $answerStructure = (object)[
-            'title' => $answer->text,
+            'description' => $answer->text,
             'correctness' => !empty($answer->isCorrect) ? 100 : 0,
             'metadata' => $answer->getMetadata(),
         ];
 
-        $response = $this->client->request("POST", sprintf(self::ANSWER, $answer->questionId), ['json' => $answerStructure]);
+        $response = $this->client->request("POST", sprintf(self::ANSWERS, $answer->questionId), ['json' => $answerStructure]);
         $answerResponse = \GuzzleHttp\json_decode($response->getBody());
         return $this->mapAnswerResponseToDataObject($answerResponse);
     }
