@@ -12,7 +12,7 @@ use Illuminate\Support\Collection;
 trait CreateTrait
 {
     /**
-     * @param array|null $attributes
+     * @param mixed $attributes
      * @return CreateTrait
      */
     public static function create($attributes = null)

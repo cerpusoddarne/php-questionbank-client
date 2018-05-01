@@ -64,6 +64,7 @@ class QuestionBankAdapter implements QuestionBankContract
         $question = QuestionDataObject::create([
             'id' => $questionValues->id,
             'text' => $questionValues->title,
+            'questionSetId' => $questionValues->questionSetId,
         ]);
         $question->addMetadata($this->transformMetadata($questionValues->metadata));
         return $question;
@@ -148,9 +149,15 @@ class QuestionBankAdapter implements QuestionBankContract
         });
     }
 
-    public function getQuestion($questionId): QuestionDataObject
+    public function getQuestion($questionId, $includeAnswers = true): QuestionDataObject
     {
-        // TODO: Implement getQuestion() method.
+        $response = $this->client->request("GET", sprintf(self::QUESTION, $questionId));
+        $data = \GuzzleHttp\json_decode($response->getBody());
+        $question = $this->mapQuestionResponseToDataObject($data);
+        if ($includeAnswers === true) {
+            $question->addAnswers($this->getAnswersByQuestion($question->id));
+        }
+        return $question;
     }
 
     public function createQuestion(QuestionDataObject $question): QuestionDataObject
@@ -177,7 +184,11 @@ class QuestionBankAdapter implements QuestionBankContract
 
     public function getAnswer($answerId): AnswerDataObject
     {
-        // TODO: Implement getAnswer() method.
+        $response = $this->client->request("GET", sprintf(self::ANSWER, $answerId));
+        $data = \GuzzleHttp\json_decode($response->getBody());
+        $answer = $this->mapAnswerResponseToDataObject($data);
+        return $answer;
+
     }
 
     public function getAnswersByQuestion($questionId): Collection
