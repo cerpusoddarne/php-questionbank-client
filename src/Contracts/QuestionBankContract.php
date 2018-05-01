@@ -18,7 +18,7 @@ interface QuestionBankContract
 
     public function getQuestionset($questionsetId) : QuestionsetDataObject;
 
-    public function createQuestionset(QuestionsetDataObject $questionset);
+    public function createQuestionset(QuestionsetDataObject $questionset): QuestionsetDataObject;
 
     public function updateQuestionset(QuestionsetDataObject $questionset);
 
@@ -26,19 +26,19 @@ interface QuestionBankContract
 
     public function getQuestions($questionsetId): Collection;
 
-    public function getQuestion($questionId);
+    public function getQuestion($questionId): QuestionDataObject;
 
-    public function createQuestion(QuestionDataObject $question);
+    public function createQuestion(QuestionDataObject $question): QuestionDataObject;
 
     public function updateQuestion(QuestionDataObject $question);
 
     public function deleteQuestion($questionId);
 
-    public function getAnswer($answerId);
+    public function getAnswer($answerId): AnswerDataObject;
 
-    public function getAnswersByQuestion($questionId);
+    public function getAnswersByQuestion($questionId): Collection;
 
-    public function createAnswer(AnswerDataObject $answer);
+    public function createAnswer(AnswerDataObject $answer): AnswerDataObject;
 
     public function updateAnswer(AnswerDataObject $answer);
 

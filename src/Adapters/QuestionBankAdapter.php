@@ -49,19 +49,47 @@ class QuestionBankAdapter implements QuestionBankContract
         ]);
     }
 
+    private function mapQuestionsetResponseToDataObject($questionValues)
+    {
+        $questionset = QuestionsetDataObject::create([
+            'id' => $questionValues->id,
+            'title' => $questionValues->title,
+        ]);
+        $questionset->addMetadata($this->transformMetadata($questionValues->metadata));
+        return $questionset;
+    }
+
+    private function mapQuestionResponseToDataObject($questionValues)
+    {
+        $question = QuestionDataObject::create([
+            'id' => $questionValues->id,
+            'text' => $questionValues->title,
+        ]);
+        $question->addMetadata($this->transformMetadata($questionValues->metadata));
+        return $question;
+    }
+
+    private function mapAnswerResponseToDataObject($answerValues)
+    {
+        $answer = AnswerDataObject::create([
+            'id' => $answerValues->id,
+            'text' => $answerValues->description,
+            'questionId' => $answerValues->questionId,
+            'isCorrect' => intval($answerValues->correctness) === 100,
+        ]);
+        $answer->addMetadata($this->transformMetadata($answerValues->metadata));
+        return $answer;
+    }
+
     /**
-     * @return array[QuestionsetDataObject]
+     * @return Collection[QuestionsetDataObject]
      */
     public function getQuestionsets($includeQuestions = true): Collection
     {
         $response = $this->client->request("GET", self::QUESTIONSETS);
         $data = collect(\GuzzleHttp\json_decode($response->getBody()));
         $questionsets = $data->map(function ($questionset) {
-            return QuestionsetDataObject::create([
-                'id' => $questionset->id,
-                'title' => $questionset->title,
-                'metadata' => $this->transformMetadata($questionset->metadata),
-            ]);
+            return $this->mapQuestionsetResponseToDataObject($questionset);
         });
         if ($includeQuestions === true) {
             $questionsets->each(function ($questionset) {
@@ -72,20 +100,31 @@ class QuestionBankAdapter implements QuestionBankContract
         return $questionsets;
     }
 
-    public function getQuestionset($questionsetId): QuestionsetDataObject
+    public function getQuestionset($questionsetId, $includeQuestions = true): QuestionsetDataObject
     {
-        $questionset = collect($this->data)->filter(function ($questionset) use ($questionsetId) {
-            return $questionset->id === $questionsetId;
-        });
-        if ($questionset->isNotEmpty()) {
-            return $questionset->first();
+        $response = $this->client->request("GET", sprintf(self::QUESTIONSET, $questionsetId));
+        $data = \GuzzleHttp\json_decode($response->getBody());
+        $questionset = $this->mapQuestionsetResponseToDataObject($data);
+        if ($includeQuestions === true) {
+            /** @var QuestionsetDataObject add */
+            $questionset->addQuestions($this->getQuestions($questionset->id));
         }
-        throw new \Exception("Could not find your questionset");
+        return $questionset;
     }
 
-    public function createQuestionset(QuestionsetDataObject $questionset)
+    public function createQuestionset(QuestionsetDataObject $questionset): QuestionsetDataObject
     {
-        // TODO: Implement createQuestionset() method.
+        if (is_null($questionset->getMetadata())) {
+            $questionset->addMetadata(MetadataDataObject::create());
+        }
+        $questionsetStructure = (object)[
+            'title' => $questionset->title,
+            'metadata' => $questionset->getMetadata(),
+        ];
+
+        $response = $this->client->request("POST", self::QUESTIONSETS, ['json' => $questionsetStructure]);
+        $questionsetResponse = \GuzzleHttp\json_decode($response->getBody());
+        return $this->mapQuestionsetResponseToDataObject($questionsetResponse);
     }
 
     public function updateQuestionset(QuestionsetDataObject $questionset)
@@ -103,25 +142,27 @@ class QuestionBankAdapter implements QuestionBankContract
         $response = $this->client->request("GET", sprintf(self::QUESTIONS, $questionsetId));
         $data = collect(\GuzzleHttp\json_decode($response->getBody()));
         return $data->map(function ($question) {
-            $question = QuestionDataObject::create([
-                'id' => $question->id,
-                'text' => $question->title,
-                'metadata' => $this->transformMetadata($question->metadata),
-                'questionSetId' => $question->questionSetId,
-            ]);
+            $question = $this->mapQuestionResponseToDataObject($question);
             $question->addAnswers($this->getAnswersByQuestion($question->id));
             return $question;
         });
     }
 
-    public function getQuestion($questionId)
+    public function getQuestion($questionId): QuestionDataObject
     {
         // TODO: Implement getQuestion() method.
     }
 
-    public function createQuestion(QuestionDataObject $question)
+    public function createQuestion(QuestionDataObject $question): QuestionDataObject
     {
-        // TODO: Implement createQuestion() method.
+        $questionStructure = (object)[
+            'title' => $question->text,
+            'metadata' => $question->getMetadata(),
+        ];
+
+        $response = $this->client->request("POST", sprintf(self::QUESTIONSET, $question->questionSetId), ['json' => $questionStructure]);
+        $questionResponse = \GuzzleHttp\json_decode($response->getBody());
+        return $this->mapQuestionResponseToDataObject($questionResponse);
     }
 
     public function updateQuestion(QuestionDataObject $question)
@@ -134,30 +175,31 @@ class QuestionBankAdapter implements QuestionBankContract
         // TODO: Implement deleteQuestion() method.
     }
 
-    public function getAnswer($answerId)
+    public function getAnswer($answerId): AnswerDataObject
     {
         // TODO: Implement getAnswer() method.
     }
 
-    public function getAnswersByQuestion($questionId)
+    public function getAnswersByQuestion($questionId): Collection
     {
         $response = $this->client->request("GET", sprintf(self::ANSWERS, $questionId));
         $data = collect(\GuzzleHttp\json_decode($response->getBody()));
         return $data->map(function ($answer) {
-            $answer = AnswerDataObject::create([
-                'id' => $answer->id,
-                'text' => $answer->description,
-                'metadata' => $this->transformMetadata($answer->metadata),
-                'questionId' => $answer->questionId,
-                'isCorrect' => intval($answer->correctness) === 100,
-            ]);
-            return $answer;
+            return $this->mapAnswerResponseToDataObject($answer);
         });
     }
 
-    public function createAnswer(AnswerDataObject $answer)
+    public function createAnswer(AnswerDataObject $answer): AnswerDataObject
     {
-        // TODO: Implement createAnswer() method.
+        $answerStructure = (object)[
+            'title' => $answer->text,
+            'correctness' => !empty($answer->isCorrect) ? 100 : 0,
+            'metadata' => $answer->getMetadata(),
+        ];
+
+        $response = $this->client->request("POST", sprintf(self::ANSWER, $answer->questionId), ['json' => $answerStructure]);
+        $answerResponse = \GuzzleHttp\json_decode($response->getBody());
+        return $this->mapAnswerResponseToDataObject($answerResponse);
     }
 
     public function updateAnswer(AnswerDataObject $answer)

@@ -15,18 +15,32 @@ trait CreateTrait
      * @param array|null $attributes
      * @return CreateTrait
      */
-    public static function create(array $attributes = null)
+    public static function create($attributes = null)
     {
         $self = new self();
-        if (is_array($attributes)) {
-            $properties = get_object_vars($self);
-            foreach ($attributes as $attribute => $value) {
-                if (array_key_exists($attribute, $properties)) {
-                    $self->$attribute = $value;
-                }
+        if (is_null($attributes)) {
+            return $self;
+        }
+        $properties = get_object_vars($self);
+        if (!is_array($attributes)) {
+            $arguments = array_pad(func_get_args(), count($properties), null);
+            $attributes = array_combine(array_keys($properties), $arguments);
+        }
+        foreach ($attributes as $attribute => $value) {
+            if (!$self->isGuarded($attribute) && array_key_exists($attribute, $properties)) {
+                $self->$attribute = $value;
             }
         }
+
         return $self;
+    }
+
+    private function isGuarded($attribute)
+    {
+        if (strtolower($attribute) === 'guarded') {
+            return true;
+        }
+        return !empty($this->guarded) && in_array($attribute, $this->guarded);
     }
 
     /**

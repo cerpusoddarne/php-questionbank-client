@@ -45,13 +45,50 @@ class QuestionBankAdapterTest extends \PHPUnit\Framework\TestCase
             ->setConstructorArgs(['client' => $client])
             ->setMethods(['getQuestions'])
             ->getMock();
-        $adapter->method('getQuestions')->willReturn(collect([QuestionDataObject::create(['text' => "Mock question"])]));
+        $adapter->method('getQuestions')->willReturn(collect([QuestionDataObject::create()]));
 
         $questionsets = $adapter->getQuestionsets(true);
         $this->assertEquals(get_class($questionsets), Collection::class);
         $questionsetsArray = $questionsets->toArray();
         $this->assertCount(2, $questionsetsArray);
         $this->assertEquals(get_class($questionsetsArray[0]), QuestionsetDataObject::class);
+    }
+
+    /**
+     * @test
+     */
+    public function getQuestionsetWithoutQuestions()
+    {
+        $client = $this->createMock(ClientInterface::class);
+        $client->method("request")->willReturnCallback(function () {
+            return (new Response(\Illuminate\Http\Response::HTTP_OK, [], '{"metadata": {"keywords": ["progress"]},"id": "c2197f7c-668d-4464-b645-cb4068f7eade","title": "QS progress"}'));
+        });
+
+        $adapter = new QuestionBankAdapter($client);
+        $questionset = $adapter->getQuestionset('c2197f7c-668d-4464-b645-cb4068f7eade', false);
+        $this->assertEquals('c2197f7c-668d-4464-b645-cb4068f7eade', $questionset->id);
+        $this->assertEmpty($questionset->getQuestions());
+    }
+
+    /**
+     * @test
+     */
+    public function getQuestionsetWithQuestions()
+    {
+        $client = $this->createMock(ClientInterface::class);
+        $client->method("request")->willReturnCallback(function () {
+            return (new Response(\Illuminate\Http\Response::HTTP_OK, [], '{"metadata": {"keywords": ["progress"]},"id": "c2197f7c-668d-4464-b645-cb4068f7eade","title": "QS progress"}'));
+        });
+
+        $adapter = $this->getMockBuilder(QuestionBankAdapter::class)
+            ->setConstructorArgs(['client' => $client])
+            ->setMethods(['getQuestions'])
+            ->getMock();
+        $adapter->method('getQuestions')->willReturn(collect([QuestionDataObject::create()]));
+
+        $questionset = $adapter->getQuestionset('c2197f7c-668d-4464-b645-cb4068f7eade');
+        $this->assertEquals('c2197f7c-668d-4464-b645-cb4068f7eade', $questionset->id);
+        $this->assertNotEmpty($questionset->getQuestions());
     }
 
     /**
@@ -85,7 +122,7 @@ class QuestionBankAdapterTest extends \PHPUnit\Framework\TestCase
             ->setConstructorArgs(['client' => $client])
             ->setMethods(['getAnswersByQuestion'])
             ->getMock();
-        $adapter->method('getAnswersByQuestion')->willReturn(collect([AnswerDataObject::create(['text' => "Mock answer", 'isCorrect' => 100])]));
+        $adapter->method('getAnswersByQuestion')->willReturn(collect([AnswerDataObject::create()]));
 
         $questions = $adapter->getQuestions("questionsetWithNoQuestions");
         $this->assertEquals(get_class($questions), Collection::class);
@@ -126,5 +163,57 @@ class QuestionBankAdapterTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(get_class($questions), Collection::class);
         $questionsArray = $questions->toArray();
         $this->assertCount(2, $questionsArray);
+    }
+
+    /**
+     * @test
+     */
+    public function createQuestionset()
+    {
+        $client = $this->createMock(ClientInterface::class);
+        $client->method("request")->willReturnCallback(function () {
+            return (new Response(\Illuminate\Http\Response::HTTP_OK, [], '{"metadata":{"keywords":[]},"id":"d8884054-5fb4-4f4e-9fd6-6bceb85ee57d","title":"New Questionset"}'));
+        });
+
+        $adapter = new QuestionBankAdapter($client);
+        $savedQuestionset = $adapter->createQuestionset(QuestionsetDataObject::create("New Questionset"));
+        $this->assertEquals(get_class($savedQuestionset), QuestionsetDataObject::class);
+        $this->assertEquals("New Questionset", $savedQuestionset->title);
+        $this->assertEquals('d8884054-5fb4-4f4e-9fd6-6bceb85ee57d', $savedQuestionset->id);
+    }
+
+    /**
+     * @test
+     */
+    public function createQuestion()
+    {
+        $client = $this->createMock(ClientInterface::class);
+        $client->method("request")->willReturnCallback(function () {
+            return (new Response(\Illuminate\Http\Response::HTTP_OK, [], '{"metadata":{"keywords":[]},"id":"d8884054-5fb4-4f4e-9fd6-6bceb85ee57d","title":"New Question"}'));
+        });
+
+        $adapter = new QuestionBankAdapter($client);
+        $savedQuestion = $adapter->createQuestion(QuestionDataObject::create("New Question"));
+        $this->assertEquals(get_class($savedQuestion), QuestionDataObject::class);
+        $this->assertEquals("New Question", $savedQuestion->text);
+        $this->assertEquals('d8884054-5fb4-4f4e-9fd6-6bceb85ee57d', $savedQuestion->id);
+    }
+
+    /**
+     * @test
+     */
+    public function createAnswer()
+    {
+        $client = $this->createMock(ClientInterface::class);
+        $client->method("request")->willReturnCallback(function () {
+            return (new Response(\Illuminate\Http\Response::HTTP_OK, [], '{"metadata":{"keywords":[]},"id":"cebfd105-d5e5-4158-9568-2f8a1252ccb4","questionId":"a184acf1-4c78-4f43-9a44-aad294dcc146","description":"New Answer","correctness":100}'));
+        });
+
+        $adapter = new QuestionBankAdapter($client);
+        $savedAnswer = $adapter->createAnswer(AnswerDataObject::create("New Answer"));
+        $this->assertEquals(get_class($savedAnswer), AnswerDataObject::class);
+        $this->assertEquals("New Answer", $savedAnswer->text);
+        $this->assertEquals('cebfd105-d5e5-4158-9568-2f8a1252ccb4', $savedAnswer->id);
+
     }
 }
