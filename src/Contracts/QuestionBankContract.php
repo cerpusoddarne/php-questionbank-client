@@ -5,6 +5,7 @@ namespace Cerpus\QuestionBankClient\Contracts;
 use Cerpus\QuestionBankClient\DataObjects\AnswerDataObject;
 use Cerpus\QuestionBankClient\DataObjects\QuestionDataObject;
 use Cerpus\QuestionBankClient\DataObjects\QuestionsetDataObject;
+use Illuminate\Support\Collection;
 
 /**
  * Interface QuestionBankContract
@@ -13,7 +14,7 @@ use Cerpus\QuestionBankClient\DataObjects\QuestionsetDataObject;
 interface QuestionBankContract
 {
 
-    public function getQuestionsets(): array;
+    public function getQuestionsets(): Collection;
 
     public function getQuestionset($questionsetId) : QuestionsetDataObject;
 
@@ -23,7 +24,7 @@ interface QuestionBankContract
 
     public function deleteQuestionset($id);
 
-    public function getQuestions($questionsetId);
+    public function getQuestions($questionsetId): Collection;
 
     public function getQuestion($questionId);
 

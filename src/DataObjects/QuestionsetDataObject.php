@@ -4,6 +4,7 @@ namespace Cerpus\QuestionBankClient\DataObjects;
 
 
 use Cerpus\QuestionBankClient\Traits\CreateTrait;
+use Illuminate\Support\Collection;
 
 class QuestionsetDataObject
 {
@@ -26,6 +27,13 @@ class QuestionsetDataObject
     public function getQuestions()
     {
         return $this->questions;
+    }
+
+    public function addQuestions(Collection $questions)
+    {
+        $questions->each(function ($question) {
+            $this->addQuestion($question);
+        });
     }
 
 }
