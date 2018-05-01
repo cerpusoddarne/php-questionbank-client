@@ -4,14 +4,18 @@ namespace Cerpus\QuestionBankClient\DataObjects;
 
 
 use Cerpus\QuestionBankClient\Traits\CreateTrait;
+use Cerpus\QuestionBankClient\Traits\MetadataTrait;
+use Illuminate\Support\Collection;
 
-class QuestionsetDataObject
+class QuestionsetDataObject extends BaseDataObject
 {
-    use CreateTrait;
+    use CreateTrait, MetadataTrait;
 
-    public $title, $id, $metadata;
+    public $title, $id;
 
     private $questions;
+
+    public $guarded = ['metadata', 'questions'];
 
     public function __construct()
     {
@@ -26,6 +30,23 @@ class QuestionsetDataObject
     public function getQuestions()
     {
         return $this->questions;
+    }
+
+    public function addQuestions(Collection $questions)
+    {
+        $questions->each(function ($question) {
+            $this->addQuestion($question);
+        });
+    }
+
+    public function addMetadata(MetadataDataObject $metadata)
+    {
+        $this->metadata = $metadata;
+    }
+
+    public function getMetadata()
+    {
+        return $this->metadata;
     }
 
 }

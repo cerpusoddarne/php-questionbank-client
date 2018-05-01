@@ -4,11 +4,11 @@ namespace Cerpus\QuestionBankClient\Adapters;
 
 use Cerpus\QuestionBankClient\Contracts\QuestionBankContract;
 use Cerpus\QuestionBankClient\DataObjects\AnswerDataObject;
+use Cerpus\QuestionBankClient\DataObjects\MetadataDataObject;
 use Cerpus\QuestionBankClient\DataObjects\QuestionDataObject;
 use Cerpus\QuestionBankClient\DataObjects\QuestionsetDataObject;
-use Cerpus\QuestionBankClient\QuestionBankClient;
 use GuzzleHttp\ClientInterface;
-use Ramsey\Uuid\Uuid;
+use Illuminate\Support\Collection;
 
 /**
  * Class QuestionBankAdapter
@@ -40,316 +40,92 @@ class QuestionBankAdapter implements QuestionBankContract
     public function __construct(ClientInterface $client)
     {
         $this->client = $client;
-        $this->data = $this->createData($this->getData());
     }
 
-    private function getData()
+    private function transformMetadata($metadata)
     {
-        $data = file_get_contents(QuestionBankClient::getBasePath() . '/src/Adapters/tempData.json');
-        return json_decode($data, true);
+        return MetadataDataObject::create([
+            'keywords' => $metadata->keywords
+        ]);
     }
 
-    private function dataBackup()
+    private function mapQuestionsetResponseToDataObject($questionValues)
     {
-        $questionsetsTemplate = [
-            [
-                'title' => 'Geografi',
-                'questions' => [
-                    [
-                        'text' => "Hvilken verdensdel tilhører Norge?",
-                        'answers' => [
-                            [
-                                'text' => "Europa",
-                                'isCorrect' => true,
-                            ],
-                            [
-                                'text' => "Asia",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "Afrika",
-                                'isCorrect' => false,
-                            ],
-                        ],
-                    ],
-                    [
-                        'text' => "Hva heter verdens høyeste fjell?",
-                        'answers' => [
-                            [
-                                'text' => "Mount Everest",
-                                'isCorrect' => true,
-                            ],
-                            [
-                                'text' => "K2",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "Galdhøpiggen",
-                                'isCorrect' => false,
-                            ],
-                        ],
-                    ],
-                    [
-                        'text' => "Hvor mange land består Storbritannia av?",
-                        'answers' => [
-                            [
-                                'text' => "4",
-                                'isCorrect' => true,
-                            ],
-                            [
-                                'text' => "1",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "2",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "5",
-                                'isCorrect' => false,
-                            ],
-                        ],
-                    ],
-                    [
-                        'text' => "Hvor mange land grenser Norge til?",
-                        'answers' => [
-                            [
-                                'text' => "3",
-                                'isCorrect' => true,
-                            ],
-                            [
-                                'text' => "2",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "3",
-                                'isCorrect' => false,
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            [
-                'title' => 'Sport',
-                'questions' => [
-                    [
-                        'text' => "Hvor mange ganger har Norge vunnet VM i fotball for kvinner?",
-                        'answers' => [
-                            [
-                                'text' => "1",
-                                'isCorrect' => true,
-                            ],
-                            [
-                                'text' => "0",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "2",
-                                'isCorrect' => false,
-                            ],
-                        ],
-                    ],
-                    [
-                        'text' => "Hvor arrangerte man OL i 2002?",
-                        'answers' => [
-                            [
-                                'text' => "Bejing",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "Oslo",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "Salt Lake City",
-                                'isCorrect' => true,
-                            ],
-                        ],
-                    ],
-                    [
-                        'text' => "Hvor kommer sporten curling fra?",
-                        'answers' => [
-                            [
-                                'text' => "England",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "Skottland",
-                                'isCorrect' => true,
-                            ],
-                            [
-                                'text' => "Nederland",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "Norge",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "Island",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "USA",
-                                'isCorrect' => false,
-                            ],
-                        ],
-                    ],
-                    [
-                        'text' => "Hvor mange stener har hvert lag i curling?",
-                        'answers' => [
-                            [
-                                'text' => "6",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "8",
-                                'isCorrect' => true,
-                            ],
-                            [
-                                'text' => "10",
-                                'isCorrect' => false,
-                            ],
-                        ],
-                    ],
-                    [
-                        'text' => "Hvilken spiller har vunnet flest Grand Slam titler i tennis?",
-                        'answers' => [
-                            [
-                                'text' => "Roger Federer",
-                                'isCorrect' => true,
-                            ],
-                            [
-                                'text' => "Rafael Nadal",
-                                'isCorrect' => false,
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            [
-                'title' => 'Math trivia',
-                'questions' => [
-                    [
-                        'text' => "How many digits of pi are there?",
-                        'answers' => [
-                            [
-                                'text' => "2",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "124",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "Infinity",
-                                'isCorrect' => true,
-                            ],
-                            [
-                                'text' => "256",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "10000",
-                                'isCorrect' => false,
-                            ],
-                        ],
-                    ],
-                    [
-                        'text' => "What is the 21st prime number?",
-                        'answers' => [
-                            [
-                                'text' => "73",
-                                'isCorrect' => true,
-                            ],
-                            [
-                                'text' => "51",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "103",
-                                'isCorrect' => false,
-                            ],
-                        ],
-                    ],
-                    [
-                        'text' => "Is 4 an irrational number?",
-                        'answers' => [
-                            [
-                                'text' => "Yes",
-                                'isCorrect' => false,
-                            ],
-                            [
-                                'text' => "No",
-                                'isCorrect' => true,
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-        ];
+        $questionset = QuestionsetDataObject::create([
+            'id' => $questionValues->id,
+            'title' => $questionValues->title,
+        ]);
+        $questionset->addMetadata($this->transformMetadata($questionValues->metadata));
+        return $questionset;
     }
 
-    private function createData($data, $original = true)
+    private function mapQuestionResponseToDataObject($questionValues)
     {
-        $questionsets = [];
-        foreach ($data as $questionsetElement) {
-            $questionsetId = array_key_exists('id', $questionsetElement) ? $questionsetElement['id'] : Uuid::uuid4()->toString();
-            $questionset = QuestionsetDataObject::create([
-                "id" => $questionsetId,
-                "title" => $questionsetElement['title'],
-            ]);
-            foreach ($questionsetElement['questions'] as $questionElement) {
-                $questionId = array_key_exists('id', $questionElement) ? $questionElement['id'] : Uuid::uuid4()->toString();
-                $question = QuestionDataObject::create([
-                    "id" => $questionId,
-                    'text' => $questionElement['text'],
-                ]);
-                foreach ($questionElement['answers'] as $answerElement) {
-                    $answerId = array_key_exists('id', $answerElement) ? $answerElement['id'] : Uuid::uuid4()->toString();
-                    $question->addAnswer(AnswerDataObject::create([
-                        "id" => $answerId,
-                        'text' => $answerElement['text'],
-                        'isCorrect' => $answerElement['isCorrect'],
-                    ]));
-                }
-                $questionset->addQuestion($question);
-            }
-            if( $original === true){
-                $questionsets[] = $questionset;
-            } else {
-                $questionsets[] = $questionset->toArray();
-            }
-        }
+        $question = QuestionDataObject::create([
+            'id' => $questionValues->id,
+            'text' => $questionValues->title,
+            'questionSetId' => $questionValues->questionSetId,
+        ]);
+        $question->addMetadata($this->transformMetadata($questionValues->metadata));
+        return $question;
+    }
 
-        if( $original !== true){
-            $questionsets = json_encode($questionsets);
+    private function mapAnswerResponseToDataObject($answerValues)
+    {
+        $answer = AnswerDataObject::create([
+            'id' => $answerValues->id,
+            'text' => $answerValues->description,
+            'questionId' => $answerValues->questionId,
+            'isCorrect' => intval($answerValues->correctness) === 100,
+        ]);
+        $answer->addMetadata($this->transformMetadata($answerValues->metadata));
+        return $answer;
+    }
+
+    /**
+     * @return Collection[QuestionsetDataObject]
+     */
+    public function getQuestionsets($includeQuestions = true): Collection
+    {
+        $response = $this->client->request("GET", self::QUESTIONSETS);
+        $data = collect(\GuzzleHttp\json_decode($response->getBody()));
+        $questionsets = $data->map(function ($questionset) {
+            return $this->mapQuestionsetResponseToDataObject($questionset);
+        });
+        if ($includeQuestions === true) {
+            $questionsets->each(function ($questionset) {
+                /** @var QuestionsetDataObject add */
+                $questionset->addQuestions($this->getQuestions($questionset->id));
+            });
         }
         return $questionsets;
     }
 
-    /**
-     * @return array[QuestionsetDataObject]
-     */
-    public function getQuestionsets($includeQuestions = true): array
+    public function getQuestionset($questionsetId, $includeQuestions = true): QuestionsetDataObject
     {
-        return $this->data;
-    }
-
-    public function getQuestionset($questionsetId) : QuestionsetDataObject
-    {
-        $questionset = collect($this->data)->filter(function ($questionset) use ($questionsetId){
-            return $questionset->id === $questionsetId;
-        });
-        if( $questionset->isNotEmpty()){
-            return $questionset->first();
+        $response = $this->client->request("GET", sprintf(self::QUESTIONSET, $questionsetId));
+        $data = \GuzzleHttp\json_decode($response->getBody());
+        $questionset = $this->mapQuestionsetResponseToDataObject($data);
+        if ($includeQuestions === true) {
+            /** @var QuestionsetDataObject add */
+            $questionset->addQuestions($this->getQuestions($questionset->id));
         }
-        throw new \Exception("Could not find your questionset");
+        return $questionset;
     }
 
-    public function createQuestionset(QuestionsetDataObject $questionset)
+    public function createQuestionset(QuestionsetDataObject $questionset): QuestionsetDataObject
     {
-        // TODO: Implement createQuestionset() method.
+        if (is_null($questionset->getMetadata())) {
+            $questionset->addMetadata(MetadataDataObject::create());
+        }
+        $questionsetStructure = (object)[
+            'title' => $questionset->title,
+            'metadata' => $questionset->getMetadata(),
+        ];
+
+        $response = $this->client->request("POST", self::QUESTIONSETS, ['json' => $questionsetStructure]);
+        $questionsetResponse = \GuzzleHttp\json_decode($response->getBody());
+        return $this->mapQuestionsetResponseToDataObject($questionsetResponse);
     }
 
     public function updateQuestionset(QuestionsetDataObject $questionset)
@@ -362,25 +138,38 @@ class QuestionBankAdapter implements QuestionBankContract
         // TODO: Implement deleteQuestionset() method.
     }
 
-    public function getQuestions($questionsetId)
+    public function getQuestions($questionsetId): Collection
     {
-        $questionset = collect($this->data)->filter(function ($questionset) use ($questionsetId){
-            return $questionset->id === $questionsetId;
+        $response = $this->client->request("GET", sprintf(self::QUESTIONS, $questionsetId));
+        $data = collect(\GuzzleHttp\json_decode($response->getBody()));
+        return $data->map(function ($question) {
+            $question = $this->mapQuestionResponseToDataObject($question);
+            $question->addAnswers($this->getAnswersByQuestion($question->id));
+            return $question;
         });
-        if( $questionset->isNotEmpty()){
-            return $questionset->first()->getQuestions();
+    }
+
+    public function getQuestion($questionId, $includeAnswers = true): QuestionDataObject
+    {
+        $response = $this->client->request("GET", sprintf(self::QUESTION, $questionId));
+        $data = \GuzzleHttp\json_decode($response->getBody());
+        $question = $this->mapQuestionResponseToDataObject($data);
+        if ($includeAnswers === true) {
+            $question->addAnswers($this->getAnswersByQuestion($question->id));
         }
-        throw new \Exception("Could not find your questionset");
+        return $question;
     }
 
-    public function getQuestion($questionId)
+    public function createQuestion(QuestionDataObject $question): QuestionDataObject
     {
-        // TODO: Implement getQuestion() method.
-    }
+        $questionStructure = (object)[
+            'title' => $question->text,
+            'metadata' => $question->getMetadata(),
+        ];
 
-    public function createQuestion(QuestionDataObject $question)
-    {
-        // TODO: Implement createQuestion() method.
+        $response = $this->client->request("POST", sprintf(self::QUESTIONSET, $question->questionSetId), ['json' => $questionStructure]);
+        $questionResponse = \GuzzleHttp\json_decode($response->getBody());
+        return $this->mapQuestionResponseToDataObject($questionResponse);
     }
 
     public function updateQuestion(QuestionDataObject $question)
@@ -393,19 +182,35 @@ class QuestionBankAdapter implements QuestionBankContract
         // TODO: Implement deleteQuestion() method.
     }
 
-    public function getAnswer($answerId)
+    public function getAnswer($answerId): AnswerDataObject
     {
-        // TODO: Implement getAnswer() method.
+        $response = $this->client->request("GET", sprintf(self::ANSWER, $answerId));
+        $data = \GuzzleHttp\json_decode($response->getBody());
+        $answer = $this->mapAnswerResponseToDataObject($data);
+        return $answer;
+
     }
 
-    public function getAnswersByQuestion($questionId)
+    public function getAnswersByQuestion($questionId): Collection
     {
-        // TODO: Implement getAnswersByQuestion() method.
+        $response = $this->client->request("GET", sprintf(self::ANSWERS, $questionId));
+        $data = collect(\GuzzleHttp\json_decode($response->getBody()));
+        return $data->map(function ($answer) {
+            return $this->mapAnswerResponseToDataObject($answer);
+        });
     }
 
-    public function createAnswer(AnswerDataObject $answer)
+    public function createAnswer(AnswerDataObject $answer): AnswerDataObject
     {
-        // TODO: Implement createAnswer() method.
+        $answerStructure = (object)[
+            'title' => $answer->text,
+            'correctness' => !empty($answer->isCorrect) ? 100 : 0,
+            'metadata' => $answer->getMetadata(),
+        ];
+
+        $response = $this->client->request("POST", sprintf(self::ANSWER, $answer->questionId), ['json' => $answerStructure]);
+        $answerResponse = \GuzzleHttp\json_decode($response->getBody());
+        return $this->mapAnswerResponseToDataObject($answerResponse);
     }
 
     public function updateAnswer(AnswerDataObject $answer)
