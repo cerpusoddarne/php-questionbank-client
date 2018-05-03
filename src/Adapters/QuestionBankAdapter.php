@@ -115,8 +115,6 @@ class QuestionBankAdapter implements QuestionBankContract
     public function getQuestionsets($search = null, $includeQuestions = true): Collection
     {
         $additionalParameters = !is_null($search) ? $this->traverseSearch($search) : [];
-        var_dump("----");
-        var_dump($additionalParameters);
         $response = $this->client->request("GET", self::QUESTIONSETS, $additionalParameters);
         $data = collect(\GuzzleHttp\json_decode($response->getBody()));
         $questionsets = $data->map(function ($questionset) {
