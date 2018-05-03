@@ -11,6 +11,9 @@ use Illuminate\Support\Collection;
  */
 trait CreateTrait
 {
+
+    public $wasRecentlyCreated = false;
+
     /**
      * @param mixed $attributes
      * @return CreateTrait
