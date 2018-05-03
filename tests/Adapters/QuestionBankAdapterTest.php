@@ -5,6 +5,7 @@ namespace Cerpus\QuestionBankClientTests\Adapters;
 use Cerpus\QuestionBankClient\DataObjects\AnswerDataObject;
 use Cerpus\QuestionBankClient\DataObjects\QuestionDataObject;
 use Cerpus\QuestionBankClient\DataObjects\QuestionsetDataObject;
+use Cerpus\QuestionBankClient\DataObjects\SearchDataObject;
 use Cerpus\QuestionBankClientTests\Utils\Traits\WithFaker;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Response;
@@ -30,7 +31,7 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
 
         /** @var ClientInterface $client */
         $adapter = new QuestionBankAdapter($client);
-        $questionsets = $adapter->getQuestionsets(false);
+        $questionsets = $adapter->getQuestionsets(null, false);
         $this->assertEquals(get_class($questionsets), Collection::class);
         $questionsetsArray = $questionsets->toArray();
         $this->assertCount(0, $questionsetsArray);
@@ -53,7 +54,7 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $adapter->method('getQuestions')->willReturn(collect([QuestionDataObject::create()]));
 
         /** @var QuestionBankAdapter $adapter */
-        $questionsets = $adapter->getQuestionsets(true);
+        $questionsets = $adapter->getQuestionsets(null, true);
         $this->assertEquals(get_class($questionsets), Collection::class);
         $questionsetsArray = $questionsets->toArray();
         $this->assertCount(2, $questionsetsArray);
@@ -356,4 +357,85 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $this->assertFalse($savedAnswer->wasRecentlyCreated);
     }
 
+    /**
+     * @test
+     */
+    public function getQuestionsetsWithSearch()
+    {
+        $client = $this->createMock(ClientInterface::class);
+        $client->method("request")
+            ->with("GET", QuestionBankAdapter::QUESTIONSETS, ['query' => ['search' => 'Nytt']])
+            ->willReturn(new Response(StatusCode::OK, [], '[{"metadata":{"keywords":[]},"id":"cda71174-2d82-439a-bd4a-343e982cdaa9","title":"Nytt på nytt"},{"metadata":{"keywords":[]},"id":"b9da2705-4e8f-4d43-bb28-93bb3ba9d215","title":"Helt nytt"}]'));
+
+        $search = SearchDataObject::create('search', 'Nytt');
+        /** @var QuestionBankAdapter $adapter */
+        $adapter = new QuestionBankAdapter($client);
+        $questionsets = $adapter->getQuestionsets($search, false);
+        $this->assertEquals(get_class($questionsets), Collection::class);
+        $questionsetsArray = $questionsets->toArray();
+        $this->assertCount(2, $questionsetsArray);
+        $this->assertEquals(get_class($questionsetsArray[0]), QuestionsetDataObject::class);
+
+        $client = $this->createMock(ClientInterface::class);
+        $client->method("request")
+            ->with("GET", QuestionBankAdapter::QUESTIONSETS, ['query' => ['search' => 'Nytt på']])
+            ->willReturn(new Response(StatusCode::OK, [], '[{"metadata":{"keywords":[]},"id":"cda71174-2d82-439a-bd4a-343e982cdaa9","title":"Nytt på nytt"}]'));
+
+        $search = SearchDataObject::create('search', 'Nytt på');
+        /** @var QuestionBankAdapter $adapter */
+        $adapter = new QuestionBankAdapter($client);
+        $questionsets = $adapter->getQuestionsets($search, false);
+        $this->assertEquals(get_class($questionsets), Collection::class);
+        $questionsetsArray = $questionsets->toArray();
+        $this->assertCount(1, $questionsetsArray);
+        $this->assertEquals(get_class($questionsetsArray[0]), QuestionsetDataObject::class);
+
+        $client = $this->createMock(ClientInterface::class);
+        $client->method("request")
+            ->with("GET", QuestionBankAdapter::QUESTIONSETS, ['query' => [
+                'search' => 'Nytt',
+                'keyword' => 'fjell'
+            ]])
+            ->willReturn(new Response(StatusCode::OK, [], '[]'));
+
+        $search = collect([
+            SearchDataObject::create('search', 'Nytt'),
+            SearchDataObject::create('keyword', 'fjell')
+        ]);
+        /** @var QuestionBankAdapter $adapter */
+        $adapter = new QuestionBankAdapter($client);
+        $adapter->getQuestionsets($search, false);
+
+        $client = $this->createMock(ClientInterface::class);
+        $client->method("request")
+            ->with("GET", QuestionBankAdapter::QUESTIONSETS, ['query' => [
+                'search' => 'Nytt',
+                'keyword' => 'keyword1,keyword2'
+            ]])
+            ->willReturn(new Response(StatusCode::OK, [], '[]'));
+
+        $search = collect([
+            SearchDataObject::create('search', 'Nytt'),
+            SearchDataObject::create('keyword', ['keyword1', 'keyword2'])
+        ]);
+        /** @var QuestionBankAdapter $adapter */
+        $adapter = new QuestionBankAdapter($client);
+        $adapter->getQuestionsets($search, false);
+
+        $client = $this->createMock(ClientInterface::class);
+        $client->method("request")
+            ->with("GET", QuestionBankAdapter::QUESTIONSETS, ['query' => [
+                'search' => 'Nytt',
+                'keyword' => 'keyword1 keyword2'
+            ]])
+            ->willReturn(new Response(StatusCode::OK, [], '[]'));
+
+        $search = collect([
+            SearchDataObject::create('search', 'Nytt'),
+            SearchDataObject::create('keyword', ['keyword1', 'keyword2'], SearchDataObject::AND_OPERATOR),
+        ]);
+        /** @var QuestionBankAdapter $adapter */
+        $adapter = new QuestionBankAdapter($client);
+        $adapter->getQuestionsets($search, false);
+    }
 }

@@ -14,7 +14,7 @@ use Illuminate\Support\Collection;
 interface QuestionBankContract
 {
 
-    public function getQuestionsets(): Collection;
+    public function getQuestionsets($searchParams = null): Collection;
 
     public function getQuestionset($questionsetId) : QuestionsetDataObject;
 
