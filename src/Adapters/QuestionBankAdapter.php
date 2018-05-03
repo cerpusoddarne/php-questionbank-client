@@ -94,7 +94,7 @@ class QuestionBankAdapter implements QuestionBankContract
         });
         if ($includeQuestions === true) {
             $questionsets->each(function ($questionset) {
-                /** @var QuestionsetDataObject add */
+                /** @var QuestionsetDataObject $questionset */
                 $questionset->addQuestions($this->getQuestions($questionset->id));
             });
         }
@@ -107,7 +107,7 @@ class QuestionBankAdapter implements QuestionBankContract
         $data = \GuzzleHttp\json_decode($response->getBody());
         $questionset = $this->mapQuestionsetResponseToDataObject($data);
         if ($includeQuestions === true) {
-            /** @var QuestionsetDataObject add */
+            /** @var QuestionsetDataObject $questionset */
             $questionset->addQuestions($this->getQuestions($questionset->id));
         }
         return $questionset;

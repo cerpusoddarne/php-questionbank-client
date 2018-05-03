@@ -7,6 +7,12 @@ use Cerpus\QuestionBankClient\Traits\CreateTrait;
 use Cerpus\QuestionBankClient\Traits\MetadataTrait;
 use Illuminate\Support\Collection;
 
+/**
+ * Class QuestionsetsDataObject
+ * @package Cerpus\QuestionBankClient\DataObjects
+ *
+ * @method static QuestionsetsDataObject create($attributes = null)
+ */
 class QuestionsetsDataObject extends BaseDataObject
 {
     use CreateTrait, MetadataTrait;
