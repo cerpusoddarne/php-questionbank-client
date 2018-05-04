@@ -7,6 +7,8 @@ use Cerpus\QuestionBankClient\DataObjects\AnswerDataObject;
 use Cerpus\QuestionBankClient\DataObjects\MetadataDataObject;
 use Cerpus\QuestionBankClient\DataObjects\QuestionDataObject;
 use Cerpus\QuestionBankClient\DataObjects\QuestionsetDataObject;
+use Cerpus\QuestionBankClient\DataObjects\SearchDataObject;
+use Cerpus\QuestionBankClient\Exceptions\InvalidSearchParametersException;
 use GuzzleHttp\ClientInterface;
 use Illuminate\Support\Collection;
 
@@ -80,12 +82,40 @@ class QuestionBankAdapter implements QuestionBankContract
         return $answer;
     }
 
+    private function traverseSearch($search): array
+    {
+        if (!is_object($search) || !in_array(get_class($search), [
+                Collection::class,
+                SearchDataObject::class,
+            ])) {
+            throw new InvalidSearchParametersException();
+        }
+
+        if (is_a($search, SearchDataObject::class)) {
+            $params = collect([$search]);
+        } else {
+            $params = $search;
+        }
+
+        $queryParams = $params
+            ->map(function (SearchDataObject $param) {
+                return $param->make();
+            })
+            ->reduce(function ($old, $new) {
+                return array_merge($old, $new);
+            }, []);
+        return ['query' => $queryParams];
+    }
+
     /**
      * @return Collection[QuestionsetDataObject]
+     * @param Collection|SearchDataObject $search = null
+     * @param boolean $includeQuestions = true
      */
-    public function getQuestionsets($includeQuestions = true): Collection
+    public function getQuestionsets($search = null, $includeQuestions = true): Collection
     {
-        $response = $this->client->request("GET", self::QUESTIONSETS);
+        $additionalParameters = !is_null($search) ? $this->traverseSearch($search) : [];
+        $response = $this->client->request("GET", self::QUESTIONSETS, $additionalParameters);
         $data = collect(\GuzzleHttp\json_decode($response->getBody()));
         $questionsets = $data->map(function ($questionset) {
             return $this->mapQuestionsetResponseToDataObject($questionset);
