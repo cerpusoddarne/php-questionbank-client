@@ -410,7 +410,7 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $client->method("request")
             ->with("GET", QuestionBankAdapter::QUESTIONSETS, ['query' => [
                 'search' => 'Nytt',
-                'keyword' => 'keyword1,keyword2'
+                'keyword' => 'keyword1+keyword2'
             ]])
             ->willReturn(new Response(StatusCode::OK, [], '[]'));
 

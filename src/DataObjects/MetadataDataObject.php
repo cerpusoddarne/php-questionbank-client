@@ -16,4 +16,5 @@ class MetadataDataObject
     use CreateTrait;
 
     public $keywords = [];
+    public $image;
 }
