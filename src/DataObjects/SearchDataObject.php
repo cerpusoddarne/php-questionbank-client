@@ -32,7 +32,7 @@ class SearchDataObject
                 return implode(" ", $phrase);
             case self::OR_OPERATOR:
             default:
-                return implode(",", $phrase);
+                return implode("+", $phrase);
         }
     }
 }
