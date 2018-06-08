@@ -42,13 +42,22 @@ class QuestionBankAdapter implements QuestionBankContract
         $this->client = $client;
     }
 
+    /**
+     * @param object $metadata
+     * @return MetadataDataObject
+     */
     private function transformMetadata($metadata)
     {
         return MetadataDataObject::create([
-            'keywords' => $metadata->keywords
+            'keywords' => $metadata->keywords,
+            'images' => $metadata->images,
         ]);
     }
 
+    /**
+     * @param object $questionValues
+     * @return QuestionsetDataObject
+     */
     private function mapQuestionsetResponseToDataObject($questionValues)
     {
         $questionset = QuestionsetDataObject::create([
@@ -59,6 +68,10 @@ class QuestionBankAdapter implements QuestionBankContract
         return $questionset;
     }
 
+    /**
+     * @param object $questionValues
+     * @return QuestionDataObject
+     */
     private function mapQuestionResponseToDataObject($questionValues)
     {
         $question = QuestionDataObject::create([
@@ -70,6 +83,10 @@ class QuestionBankAdapter implements QuestionBankContract
         return $question;
     }
 
+    /**
+     * @param object $answerValues
+     * @return AnswerDataObject
+     */
     private function mapAnswerResponseToDataObject($answerValues)
     {
         $answer = AnswerDataObject::create([
@@ -82,6 +99,11 @@ class QuestionBankAdapter implements QuestionBankContract
         return $answer;
     }
 
+    /**
+     * @param Collection|SearchDataObject $search
+     * @return array
+     * @throws InvalidSearchParametersException
+     */
     private function traverseSearch($search): array
     {
         if (!is_object($search) || !in_array(get_class($search), [
@@ -129,6 +151,11 @@ class QuestionBankAdapter implements QuestionBankContract
         return $questionsets;
     }
 
+    /**
+     * @param string $questionsetId
+     * @param bool $includeQuestions
+     * @return QuestionsetDataObject
+     */
     public function getQuestionset($questionsetId, $includeQuestions = true): QuestionsetDataObject
     {
         $response = $this->client->request("GET", sprintf(self::QUESTIONSET, $questionsetId));
@@ -141,6 +168,10 @@ class QuestionBankAdapter implements QuestionBankContract
         return $questionset;
     }
 
+    /**
+     * @param QuestionsetDataObject $questionset
+     * @return QuestionsetDataObject
+     */
     public function storeQuestionset(QuestionsetDataObject $questionset): QuestionsetDataObject
     {
         if (empty($questionset->id)) {
@@ -150,6 +181,10 @@ class QuestionBankAdapter implements QuestionBankContract
         }
     }
 
+    /**
+     * @param QuestionsetDataObject $questionset
+     * @return QuestionsetDataObject
+     */
     private function createQuestionset(QuestionsetDataObject $questionset): QuestionsetDataObject
     {
         if (is_null($questionset->getMetadata())) {
@@ -167,6 +202,10 @@ class QuestionBankAdapter implements QuestionBankContract
         return $createdQuestionset;
     }
 
+    /**
+     * @param QuestionsetDataObject $questionset
+     * @return QuestionsetDataObject
+     */
     private function updateQuestionset(QuestionsetDataObject $questionset): QuestionsetDataObject
     {
         if (is_null($questionset->getMetadata())) {
@@ -182,11 +221,18 @@ class QuestionBankAdapter implements QuestionBankContract
         return $this->mapQuestionsetResponseToDataObject($questionsetResponse);
     }
 
+    /**
+     * @param $id
+     */
     public function deleteQuestionset($id)
     {
         // TODO: Implement deleteQuestionset() method.
     }
 
+    /**
+     * @param $questionsetId
+     * @return Collection[QuestionDataObject]
+     */
     public function getQuestions($questionsetId): Collection
     {
         $response = $this->client->request("GET", sprintf(self::QUESTIONS, $questionsetId));
@@ -198,6 +244,11 @@ class QuestionBankAdapter implements QuestionBankContract
         });
     }
 
+    /**
+     * @param $questionId
+     * @param bool $includeAnswers
+     * @return QuestionDataObject
+     */
     public function getQuestion($questionId, $includeAnswers = true): QuestionDataObject
     {
         $response = $this->client->request("GET", sprintf(self::QUESTION, $questionId));
@@ -209,6 +260,10 @@ class QuestionBankAdapter implements QuestionBankContract
         return $question;
     }
 
+    /**
+     * @param QuestionDataObject $question
+     * @return QuestionDataObject
+     */
     public function storeQuestion(QuestionDataObject $question): QuestionDataObject
     {
         if (empty($question->id)) {
@@ -218,6 +273,10 @@ class QuestionBankAdapter implements QuestionBankContract
         }
     }
 
+    /**
+     * @param QuestionDataObject $question
+     * @return QuestionDataObject
+     */
     private function createQuestion(QuestionDataObject $question): QuestionDataObject
     {
         if (is_null($question->getMetadata())) {
@@ -236,6 +295,10 @@ class QuestionBankAdapter implements QuestionBankContract
         return $createdQuestion;
     }
 
+    /**
+     * @param QuestionDataObject $question
+     * @return QuestionDataObject
+     */
     private function updateQuestion(QuestionDataObject $question): QuestionDataObject
     {
         if (is_null($question->getMetadata())) {
@@ -252,20 +315,29 @@ class QuestionBankAdapter implements QuestionBankContract
         return $this->mapQuestionResponseToDataObject($questionResponse);
     }
 
+    /**
+     * @param $questionId
+     */
     public function deleteQuestion($questionId)
     {
         // TODO: Implement deleteQuestion() method.
     }
 
+    /**
+     * @param $answerId
+     * @return AnswerDataObject
+     */
     public function getAnswer($answerId): AnswerDataObject
     {
         $response = $this->client->request("GET", sprintf(self::ANSWER, $answerId));
         $data = \GuzzleHttp\json_decode($response->getBody());
-        $answer = $this->mapAnswerResponseToDataObject($data);
-        return $answer;
-
+        return $this->mapAnswerResponseToDataObject($data);
     }
 
+    /**
+     * @param $questionId
+     * @return Collection[AnswerDataObject]
+     */
     public function getAnswersByQuestion($questionId): Collection
     {
         $response = $this->client->request("GET", sprintf(self::ANSWERS, $questionId));
@@ -275,6 +347,10 @@ class QuestionBankAdapter implements QuestionBankContract
         });
     }
 
+    /**
+     * @param AnswerDataObject $answer
+     * @return AnswerDataObject
+     */
     public function storeAnswer(AnswerDataObject $answer): AnswerDataObject
     {
         if (empty($answer->id)) {
@@ -284,6 +360,10 @@ class QuestionBankAdapter implements QuestionBankContract
         }
     }
 
+    /**
+     * @param AnswerDataObject $answer
+     * @return AnswerDataObject
+     */
     private function createAnswer(AnswerDataObject $answer): AnswerDataObject
     {
         if (is_null($answer->getMetadata())) {
@@ -303,6 +383,10 @@ class QuestionBankAdapter implements QuestionBankContract
         return $createdAnswer;
     }
 
+    /**
+     * @param AnswerDataObject $answer
+     * @return AnswerDataObject
+     */
     private function updateAnswer(AnswerDataObject $answer): AnswerDataObject
     {
         if (is_null($answer->getMetadata())) {
@@ -320,6 +404,9 @@ class QuestionBankAdapter implements QuestionBankContract
         return $this->mapAnswerResponseToDataObject($answerResponse);
     }
 
+    /**
+     * @param $answerId
+     */
     public function deleteAnswer($answerId)
     {
         // TODO: Implement deleteAnswer() method.

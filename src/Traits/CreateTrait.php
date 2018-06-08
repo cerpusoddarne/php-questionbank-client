@@ -38,6 +38,10 @@ trait CreateTrait
         return $self;
     }
 
+    /**
+     * @param string $attribute
+     * @return bool
+     */
     private function isGuarded($attribute)
     {
         if (strtolower($attribute) === 'guarded') {
