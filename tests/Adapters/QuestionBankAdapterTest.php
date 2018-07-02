@@ -9,8 +9,10 @@ use Cerpus\QuestionBankClient\DataObjects\SearchDataObject;
 use Cerpus\QuestionBankClientTests\Utils\Traits\WithFaker;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Collection;
 use Teapot\StatusCode;
@@ -430,5 +432,81 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         /** @var QuestionBankAdapter $adapter */
         $adapter = new QuestionBankAdapter($client);
         $adapter->getQuestionsets($search, false);
+    }
+
+    /**
+     * @test
+     */
+    public function getQuestionsWithSearch()
+    {
+        $client = $this->getClient([
+            new Response(StatusCode::OK, [], '[{"metadata": {"keywords": [],"images": []},"id": "6bdeda3c-1169-47c5-b173-782e7f36f9fc","questionSetId": "dd4c2d2f-6490-4611-9be8-df5d1c7c6eb2","title": "Updated question"}]'),
+            new Response(StatusCode::OK, [], '[]'),
+        ]);
+
+        $search = SearchDataObject::create('search', 'Question');
+        /** @var QuestionBankAdapter $adapter */
+        $adapter = new QuestionBankAdapter($client);
+        $questions = $adapter->searchQuestions($search);
+        $this->assertEquals(get_class($questions), Collection::class);
+        $question = $questions->first();
+        $this->assertCount(1, $questions);
+        $this->assertEquals(get_class($question), QuestionDataObject::class);
+        $this->assertAttributeEquals("Updated question", 'text', $question);
+
+        $newQuestions = $adapter->searchQuestions($search);
+        $this->assertEquals(get_class($newQuestions), Collection::class);
+        $this->assertCount(0, $newQuestions);
+
+    }
+
+    /**
+     * @test
+     * @expectedException GuzzleHttp\Exception\RequestException
+     */
+    public function getQuestionsWithEmptySearchString()
+    {
+        $client = $this->getClient([
+            new Response(StatusCode::BAD_REQUEST, [], '{"timestamp": "2018-07-02T11:05:54.215+0000","status": 400,"error": "Bad Request","message": "Need to specify either searchString, keywords or questionSetId","path": "/v1/questions"}'),
+        ]);
+
+        /** @var ClientInterface $client */
+        $adapter = new QuestionBankAdapter($client);
+        $adapter->searchQuestions(null);
+    }
+
+    /**
+     * @test
+     */
+    public function getAnswersWithSearch()
+    {
+        $client = $this->getClient([
+            new Response(StatusCode::OK, [], '[{"metadata": {"keywords": [],"images": []},"id": "cebcf2f0-b233-4615-ac65-70d1af015f9a","questionId": "a184acf1-4c78-4f43-9a44-aad294dcc146","description": "Correct answer","correctness": 100}]'),
+        ]);
+
+        $search = SearchDataObject::create('search', 'Question');
+        /** @var QuestionBankAdapter $adapter */
+        $adapter = new QuestionBankAdapter($client);
+        $answers = $adapter->searchAnswers($search);
+        $this->assertEquals(get_class($answers), Collection::class);
+        $answer = $answers->first();
+        $this->assertCount(1, $answers);
+        $this->assertEquals(get_class($answer), AnswerDataObject::class);
+        $this->assertAttributeEquals("Correct answer", 'text', $answer);
+    }
+
+    /**
+     * @test
+     * @expectedException GuzzleHttp\Exception\RequestException
+     */
+    public function getAnswersWithEmptySearchString()
+    {
+        $client = $this->getClient([
+            new Response(StatusCode::BAD_REQUEST, [], '{"timestamp": "2018-07-02T11:20:27.615+0000","status": 400,"error": "Bad Request","message": "Need to specify either searchString, keywords or questionId","path": "/v1/answers"}'),
+        ]);
+
+        /** @var ClientInterface $client */
+        $adapter = new QuestionBankAdapter($client);
+        $adapter->searchAnswers(null);
     }
 }
