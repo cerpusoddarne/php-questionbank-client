@@ -27,10 +27,12 @@ class QuestionBankAdapter implements QuestionBankContract
     const QUESTIONSETS = '/v1/question_sets';
     const QUESTIONSET = '/v1/question_sets/%s';
 
-    const QUESTIONS = '/v1/question_sets/%s/questions';
+    const QUESTIONSET_QUESTIONS = '/v1/question_sets/%s/questions';
+    const QUESTIONS = '/v1/questions';
     const QUESTION = '/v1/questions/%s';
 
-    const ANSWERS = '/v1/questions/%s/answers';
+    const QUESTION_ANSWERS = '/v1/questions/%s/answers';
+    const ANSWERS = '/v1/answers';
     const ANSWER = '/v1/answers/%s';
 
     /**
@@ -235,7 +237,7 @@ class QuestionBankAdapter implements QuestionBankContract
      */
     public function getQuestions($questionsetId): Collection
     {
-        $response = $this->client->request("GET", sprintf(self::QUESTIONS, $questionsetId));
+        $response = $this->client->request("GET", sprintf(self::QUESTIONSET_QUESTIONS, $questionsetId));
         $data = collect(\GuzzleHttp\json_decode($response->getBody()));
         return $data->map(function ($question) {
             $question = $this->mapQuestionResponseToDataObject($question);
@@ -288,7 +290,7 @@ class QuestionBankAdapter implements QuestionBankContract
             'metadata' => $question->getMetadata(),
         ];
 
-        $response = $this->client->request("POST", sprintf(self::QUESTIONS, $question->questionSetId), ['json' => $questionStructure]);
+        $response = $this->client->request("POST", sprintf(self::QUESTIONSET_QUESTIONS, $question->questionSetId), ['json' => $questionStructure]);
         $questionResponse = \GuzzleHttp\json_decode($response->getBody());
         $createdQuestion = $this->mapQuestionResponseToDataObject($questionResponse);
         $createdQuestion->wasRecentlyCreated = true;
@@ -340,7 +342,7 @@ class QuestionBankAdapter implements QuestionBankContract
      */
     public function getAnswersByQuestion($questionId): Collection
     {
-        $response = $this->client->request("GET", sprintf(self::ANSWERS, $questionId));
+        $response = $this->client->request("GET", sprintf(self::QUESTION_ANSWERS, $questionId));
         $data = collect(\GuzzleHttp\json_decode($response->getBody()));
         return $data->map(function ($answer) {
             return $this->mapAnswerResponseToDataObject($answer);
@@ -376,7 +378,7 @@ class QuestionBankAdapter implements QuestionBankContract
             'metadata' => $answer->getMetadata(),
         ];
 
-        $response = $this->client->request("POST", sprintf(self::ANSWERS, $answer->questionId), ['json' => $answerStructure]);
+        $response = $this->client->request("POST", sprintf(self::QUESTION_ANSWERS, $answer->questionId), ['json' => $answerStructure]);
         $answerResponse = \GuzzleHttp\json_decode($response->getBody());
         $createdAnswer = $this->mapAnswerResponseToDataObject($answerResponse);
         $createdAnswer->wasRecentlyCreated = true;
@@ -410,5 +412,40 @@ class QuestionBankAdapter implements QuestionBankContract
     public function deleteAnswer($answerId)
     {
         // TODO: Implement deleteAnswer() method.
+    }
+
+
+    /**
+     * @param Collection|null $searchParams
+     * @return Collection
+     * @throws InvalidSearchParametersException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function searchQuestions($searchParams): Collection
+    {
+        $additionalParameters = !is_null($searchParams) ? $this->traverseSearch($searchParams) : [];
+        $response = $this->client->request("GET", self::QUESTIONS, $additionalParameters);
+        $data = collect(\GuzzleHttp\json_decode($response->getBody()));
+        $questions = $data->map(function ($question) {
+            return $this->mapQuestionResponseToDataObject($question);
+        });
+        return $questions;
+
+    }
+
+    /**
+     * @param null $searchParams
+     * @return Collection
+     */
+    public function searchAnswers($searchParams): Collection
+    {
+        $additionalParameters = !is_null($searchParams) ? $this->traverseSearch($searchParams) : [];
+        $response = $this->client->request("GET", self::ANSWERS, $additionalParameters);
+        $data = collect(\GuzzleHttp\json_decode($response->getBody()));
+        $answers = $data->map(function ($answer) {
+            return $this->mapAnswerResponseToDataObject($answer);
+        });
+        return $answers;
+
     }
 }

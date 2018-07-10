@@ -13,6 +13,7 @@ trait CreateTrait
 {
 
     public $wasRecentlyCreated = false;
+    private $isDirty = false;
 
     /**
      * @param mixed $attributes
@@ -31,6 +32,7 @@ trait CreateTrait
         }
         foreach ($attributes as $attribute => $value) {
             if (!$self->isGuarded($attribute) && array_key_exists($attribute, $properties)) {
+                $self->isDirty = $self->$attribute !== $value;
                 $self->$attribute = $value;
             }
         }
@@ -71,5 +73,26 @@ trait CreateTrait
             }
         }
         return $returnArray;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDirty()
+    {
+        if( $this->isDirty === true){
+            return true;
+        }
+
+        $self = new self();
+        return $self->toJson() !== $this->toJson();
+    }
+
+    /**
+     * @return string
+     */
+    public function toJson()
+    {
+        return json_encode($this);
     }
 }
