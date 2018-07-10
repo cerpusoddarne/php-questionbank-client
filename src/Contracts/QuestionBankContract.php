@@ -37,4 +37,8 @@ interface QuestionBankContract
     public function storeAnswer(AnswerDataObject $answer): AnswerDataObject;
 
     public function deleteAnswer($answerId);
+
+    public function searchQuestions($searchParams): Collection;
+
+    public function searchAnswers($searchParams): Collection;
 }
