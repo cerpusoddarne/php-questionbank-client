@@ -428,6 +428,11 @@ class QuestionBankAdapter implements QuestionBankContract
         $data = collect(\GuzzleHttp\json_decode($response->getBody()));
         $questions = $data->map(function ($question) {
             return $this->mapQuestionResponseToDataObject($question);
+        })
+        ->map(function (QuestionDataObject $question){
+            $answers = $this->getAnswersByQuestion($question->id);
+            $question->addAnswers($answers);
+            return $question;
         });
         return $questions;
 
