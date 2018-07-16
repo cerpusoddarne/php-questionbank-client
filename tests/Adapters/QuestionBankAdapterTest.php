@@ -435,10 +435,11 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
      */
     public function getQuestionsWithSearch()
     {
-        $client = $this->createMock(ClientInterface::class);
-        $client->method("request")
-            ->with("GET", QuestionBankAdapter::QUESTIONS, ['query' => ['search' => 'Question']])
-            ->willReturn(new Response(StatusCode::OK, [], '[{"metadata": {"keywords": [],"images": []},"id": "6bdeda3c-1169-47c5-b173-782e7f36f9fc","questionSetId": "dd4c2d2f-6490-4611-9be8-df5d1c7c6eb2","title": "Updated question"}]'));
+        $client = $this->getClient([
+            new Response(StatusCode::OK, [], '[{"metadata": {"keywords": [],"images": []},"id": "6bdeda3c-1169-47c5-b173-782e7f36f9fc","questionSetId": "dd4c2d2f-6490-4611-9be8-df5d1c7c6eb2","title": "Updated question"}]'),
+            new Response(StatusCode::OK, [], '[{"metadata":{"keywords":[],"images": []},"id":"7b937904-adfc-417a-bb7c-b9a7ad576709","questionId":"6bdeda3c-1169-47c5-b173-782e7f36f9fc","description":"Answer 1","correctness":0},{"metadata":{"keywords":["testanswer"],"images": []},"id":"cebcf2f0-b233-4615-ac65-70d1af015f9a","questionId":"6bdeda3c-1169-47c5-b173-782e7f36f9fc","description":"Answer 2","correctness":100}]'),
+            new Response(StatusCode::OK, [], '[]'),
+        ]);
 
         $search = SearchDataObject::create('search', 'Question');
         /** @var QuestionBankAdapter $adapter */
@@ -449,15 +450,9 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $this->assertCount(1, $questions);
         $this->assertEquals(get_class($question), QuestionDataObject::class);
         $this->assertAttributeEquals("Updated question", 'text', $question);
-
-        $client = $this->createMock(ClientInterface::class);
-        $client->method("request")
-            ->with("GET", QuestionBankAdapter::QUESTIONS, ['query' => ['search' => 'NoHit']])
-            ->willReturn(new Response(StatusCode::OK, [], '[]'));
+        $this->assertCount(2, $question->getAnswers());
 
         $search = SearchDataObject::create('search', 'NoHit');
-        /** @var QuestionBankAdapter $adapter */
-        $adapter = new QuestionBankAdapter($client);
         $newQuestions = $adapter->searchQuestions($search);
         $this->assertEquals(get_class($newQuestions), Collection::class);
         $this->assertCount(0, $newQuestions);
