@@ -2,6 +2,9 @@
 
 namespace Cerpus\QuestionBankClient\Adapters;
 
+use GuzzleHttp\Pool;
+use GuzzleHttp\Psr7\Request;
+use Log;
 use Cerpus\QuestionBankClient\Contracts\QuestionBankContract;
 use Cerpus\QuestionBankClient\DataObjects\AnswerDataObject;
 use Cerpus\QuestionBankClient\DataObjects\MetadataDataObject;
@@ -11,6 +14,7 @@ use Cerpus\QuestionBankClient\DataObjects\SearchDataObject;
 use Cerpus\QuestionBankClient\Exceptions\InvalidSearchParametersException;
 use GuzzleHttp\ClientInterface;
 use Illuminate\Support\Collection;
+use GuzzleHttp\Promise;
 
 /**
  * Class QuestionBankAdapter
@@ -65,6 +69,7 @@ class QuestionBankAdapter implements QuestionBankContract
         $questionset = QuestionsetDataObject::create([
             'id' => $questionValues->id,
             'title' => $questionValues->title,
+            'questionCount' => property_exists($questionValues, 'questionCount') ? (int)$questionValues->questionCount : null,
         ]);
         $questionset->addMetadata($this->transformMetadata($questionValues->metadata));
         return $questionset;
@@ -89,7 +94,7 @@ class QuestionBankAdapter implements QuestionBankContract
      * @param object $answerValues
      * @return AnswerDataObject
      */
-    private function mapAnswerResponseToDataObject($answerValues)
+    private function mapAnswerResponseToDataObject($answerValues): AnswerDataObject
     {
         $answer = AnswerDataObject::create([
             'id' => $answerValues->id,
@@ -233,17 +238,69 @@ class QuestionBankAdapter implements QuestionBankContract
 
     /**
      * @param $questionsetId
+     * @param boolean $concurrent
      * @return Collection[QuestionDataObject]
      */
-    public function getQuestions($questionsetId): Collection
+    public function getQuestions($questionsetId, $concurrent = false): Collection
     {
         $response = $this->client->request("GET", sprintf(self::QUESTIONSET_QUESTIONS, $questionsetId));
         $data = collect(\GuzzleHttp\json_decode($response->getBody()));
-        return $data->map(function ($question) {
+
+        $questions = $data->map(function ($question) use ($concurrent) {
             $question = $this->mapQuestionResponseToDataObject($question);
-            $question->addAnswers($this->getAnswersByQuestion($question->id));
+            if ($concurrent === false) {
+                $question->addAnswers($this->getAnswersByQuestion($question->id));
+            }
+
             return $question;
         });
+
+        $questionsAndAnswers = collect();
+        if ($concurrent) {
+            $questionsAndAnswers = $this->asyncAddAnswers($questions);
+        } else {
+            $questionsAndAnswers = $questions;
+        }
+
+        return $questionsAndAnswers;
+    }
+
+    /**
+     * @param Collection $questions
+     * @return Collection
+     */
+    protected function asyncAddAnswers(Collection $questions): Collection
+    {
+        try {
+            $client = $this->client;
+
+            $requests = $questions->mapWithKeys(function ($q) use ($client) {
+                return [$q->id => new Request('GET', sprintf(self::QUESTION_ANSWERS, $q->id))];
+            })->toArray();
+
+            $responses = Pool::batch($this->client, $requests, ['concurrency' => 50]);
+
+            $answers = collect($responses)->mapWithKeys(function ($response, $key) {
+                $a = json_decode($response->getBody());
+                $answers = collect($a)
+                    ->map(function ($a) {
+                        $asdo = $this->mapAnswerResponseToDataObject($a);
+                        return $asdo;
+                    });
+
+                return [$key => $answers];
+            });
+
+            $questions->each(function ($q) use ($answers) {
+                $q->addAnswers($answers[$q->id]);
+
+                return $q;
+            });
+        } catch (\Exception $e) {
+            Log::error(__METHOD__ . ': QuestionBankAdapter error: ' . $e->getMessage());
+        }
+
+        return $questions;
     }
 
     /**
@@ -429,11 +486,11 @@ class QuestionBankAdapter implements QuestionBankContract
         $questions = $data->map(function ($question) {
             return $this->mapQuestionResponseToDataObject($question);
         })
-        ->map(function (QuestionDataObject $question){
-            $answers = $this->getAnswersByQuestion($question->id);
-            $question->addAnswers($answers);
-            return $question;
-        });
+            ->map(function (QuestionDataObject $question) {
+                $answers = $this->getAnswersByQuestion($question->id);
+                $question->addAnswers($answers);
+                return $question;
+            });
         return $questions;
 
     }

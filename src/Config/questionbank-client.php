@@ -15,7 +15,7 @@ return [
             "auth-secret" => "",
             "auth-token" => "",
             "auth-token_secret" => "",
+            "concurrency" => 50, //
         ],
-
     ],
 ];

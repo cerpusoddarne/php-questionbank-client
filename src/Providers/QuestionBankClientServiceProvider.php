@@ -24,7 +24,6 @@ class QuestionBankClientServiceProvider extends ServiceProvider
      */
     public function register()
     {
-
         $this->app->bind(QuestionBankClientContract::class, function ($app) {
             $questionbankClientConfig = $app['config']->get(QuestionBankClient::$alias);
             $adapter = $questionbankClientConfig['default'];
@@ -94,6 +93,7 @@ class QuestionBankClientServiceProvider extends ServiceProvider
             "auth-secret" => "",
             "auth-token" => "",
             "auth-token_secret" => "",
+            "concurrency" => 50,
         ];
     }
 

@@ -84,6 +84,7 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $questionset = $adapter->getQuestionset('c2197f7c-668d-4464-b645-cb4068f7eade', false);
         $this->assertEquals('c2197f7c-668d-4464-b645-cb4068f7eade', $questionset->id);
         $this->assertEmpty($questionset->getQuestions());
+        $this->assertEquals(0, $questionset->questionCount);
     }
 
     /**
@@ -92,7 +93,7 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     public function getQuestionsetWithQuestions()
     {
         $client = $this->getClient([
-            new Response(StatusCode::OK, [], '{"metadata": {"keywords": ["progress"],"images": []},"id": "c2197f7c-668d-4464-b645-cb4068f7eade","title": "QS progress"}')
+            new Response(StatusCode::OK, [], '{"questionCount": 1, "metadata": {"keywords": ["progress"],"images": []},"id": "c2197f7c-668d-4464-b645-cb4068f7eade","title": "QS progress"}')
         ]);
 
         $adapter = $this->getMockBuilder(QuestionBankAdapter::class)
@@ -105,6 +106,7 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $questionset = $adapter->getQuestionset('c2197f7c-668d-4464-b645-cb4068f7eade');
         $this->assertEquals('c2197f7c-668d-4464-b645-cb4068f7eade', $questionset->id);
         $this->assertNotEmpty($questionset->getQuestions());
+        $this->assertEquals(1, $questionset->questionCount);
     }
 
     /**
