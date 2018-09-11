@@ -93,7 +93,6 @@ class QuestionBankClientServiceProvider extends ServiceProvider
             "auth-secret" => "",
             "auth-token" => "",
             "auth-token_secret" => "",
-            "concurrency" => 50,
         ];
     }
 
