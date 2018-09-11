@@ -16,6 +16,5 @@ return [
             "auth-token" => "",
             "auth-token_secret" => "",
         ],
-
     ],
 ];

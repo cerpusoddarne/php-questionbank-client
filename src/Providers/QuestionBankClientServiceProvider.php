@@ -24,7 +24,6 @@ class QuestionBankClientServiceProvider extends ServiceProvider
      */
     public function register()
     {
-
         $this->app->bind(QuestionBankClientContract::class, function ($app) {
             $questionbankClientConfig = $app['config']->get(QuestionBankClient::$alias);
             $adapter = $questionbankClientConfig['default'];

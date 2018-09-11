@@ -17,7 +17,7 @@ class QuestionsetDataObject extends BaseDataObject
 {
     use CreateTrait, MetadataTrait;
 
-    public $title, $id;
+    public $title, $id, $questionCount;
 
     private $questions;
 
@@ -25,6 +25,7 @@ class QuestionsetDataObject extends BaseDataObject
 
     public function __construct()
     {
+        $this->questionCount = 0;
         $this->questions = collect();
     }
 
