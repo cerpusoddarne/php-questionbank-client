@@ -342,8 +342,9 @@ class QuestionBankAdapter implements QuestionBankContract
             $question->addMetadata(MetadataDataObject::create());
         }
 
+        $questionText = $question->stripMathContainerElements === true ? $this->stripMathContainer($question->text) : $question->text;
         $questionStructure = (object)[
-            'title' => $question->text,
+            'title' => $questionText,
             'metadata' => $question->getMetadata(),
         ];
 
@@ -364,8 +365,9 @@ class QuestionBankAdapter implements QuestionBankContract
             $question->addMetadata(MetadataDataObject::create());
         }
 
+        $questionText = $question->stripMathContainerElements === true ? $this->stripMathContainer($question->text) : $question->text;
         $questionStructure = (object)[
-            'title' => $question->text,
+            'title' => $questionText,
             'metadata' => $question->getMetadata(),
         ];
 
@@ -429,8 +431,9 @@ class QuestionBankAdapter implements QuestionBankContract
             $answer->addMetadata(MetadataDataObject::create());
         }
 
+        $answerText = $answer->stripMathContainerElements === true ? $this->stripMathContainer($answer->text) : $answer->text;
         $answerStructure = (object)[
-            'description' => $answer->text,
+            'description' => $answerText,
             'correctness' => !empty($answer->isCorrect) ? 100 : 0,
             'metadata' => $answer->getMetadata(),
         ];
@@ -452,8 +455,9 @@ class QuestionBankAdapter implements QuestionBankContract
             $answer->addMetadata(MetadataDataObject::create());
         }
 
+        $answerText = $answer->stripMathContainerElements === true ? $this->stripMathContainer($answer->text) : $answer->text;
         $answerStructure = (object)[
-            'description' => $answer->text,
+            'description' => $answerText,
             'correctness' => !empty($answer->isCorrect) ? 100 : 0,
             'metadata' => $answer->getMetadata(),
         ];
@@ -509,5 +513,15 @@ class QuestionBankAdapter implements QuestionBankContract
         });
         return $answers;
 
+    }
+
+    public function stripMathContainer($text): string
+    {
+        $pattern = [
+            '/<span\s+class="math_container"\s*>([\s\S]+?)<\/span>/i',
+            '/\${2}\\\\\(([\s\S]+?)\\\\\)\${2}/i',
+        ];
+        $replace = '\\$\\$$1\\$\\$';
+        return preg_replace($pattern, $replace, $text);
     }
 }

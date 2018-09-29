@@ -27,13 +27,20 @@ trait CreateTrait
         }
         $properties = get_object_vars($self);
         if (!is_array($attributes)) {
-            $arguments = array_pad(func_get_args(), count($properties), null);
-            $attributes = array_combine(array_keys($properties), $arguments);
+            $arguments = func_get_args();
+            $propertiesKeys = array_keys($properties);
+            $attributes = [];
+            foreach ($arguments as $index => $value) {
+                $property = $propertiesKeys[$index];
+                $attributes[$property] = $value;
+            }
         }
         foreach ($attributes as $attribute => $value) {
             if (!$self->isGuarded($attribute) && array_key_exists($attribute, $properties)) {
-                $self->isDirty = $self->$attribute !== $value;
-                $self->$attribute = $value;
+                $self->isDirty = $self->isDirty || $self->$attribute !== $value;
+                if ($attribute !== 'isDirty') {
+                    $self->$attribute = $value;
+                }
             }
         }
 

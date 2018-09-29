@@ -5,6 +5,12 @@ namespace Cerpus\QuestionBankClient\DataObjects;
 
 use Cerpus\QuestionBankClient\Traits\CreateTrait;
 
+/**
+ * Class SearchDataObject
+ * @package Cerpus\QuestionBankClient\DataObjects
+ *
+ * @method static SearchDataObject create($attributes = null)
+ */
 class SearchDataObject
 {
 

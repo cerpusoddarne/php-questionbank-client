@@ -18,6 +18,7 @@ class QuestionDataObject extends BaseDataObject
     use CreateTrait, MetadataTrait;
 
     public $text, $questionSetId, $id, $answerCount;
+    public $stripMathContainerElements = true;
 
     private $answers;
 
