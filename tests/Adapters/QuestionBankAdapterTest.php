@@ -10,10 +10,8 @@ use Cerpus\QuestionBankClient\DataObjects\SearchDataObject;
 use Cerpus\QuestionBankClientTests\Utils\Traits\WithFaker;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Collection;
 use Teapot\StatusCode;
@@ -429,6 +427,7 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
      */
     public function getQuestionsetsWithSearch()
     {
+        /** @var ClientInterface $client */
         $client = $this->createMock(ClientInterface::class);
         $client->method("request")
             ->with("GET", QuestionBankAdapter::QUESTIONSETS, ['query' => ['search' => 'Nytt']])
