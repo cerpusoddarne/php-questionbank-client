@@ -17,4 +17,5 @@ class AnswerDataObject
     use CreateTrait, MetadataTrait;
 
     public $text, $id, $isCorrect, $questionId;
+    public $stripMathContainerElements = true;
 }

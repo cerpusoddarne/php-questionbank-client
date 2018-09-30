@@ -41,4 +41,6 @@ interface QuestionBankContract
     public function searchQuestions($searchParams): Collection;
 
     public function searchAnswers($searchParams): Collection;
+
+    public function stripMathContainer($haystack): string;
 }

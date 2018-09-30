@@ -3,16 +3,15 @@
 namespace Cerpus\QuestionBankClientTests\Adapters;
 
 use Cerpus\QuestionBankClient\DataObjects\AnswerDataObject;
+use Cerpus\QuestionBankClient\DataObjects\MetadataDataObject;
 use Cerpus\QuestionBankClient\DataObjects\QuestionDataObject;
 use Cerpus\QuestionBankClient\DataObjects\QuestionsetDataObject;
 use Cerpus\QuestionBankClient\DataObjects\SearchDataObject;
 use Cerpus\QuestionBankClientTests\Utils\Traits\WithFaker;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Collection;
 use Teapot\StatusCode;
@@ -282,6 +281,79 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     /**
      * @test
      */
+    public function createQuestionWithMath()
+    {
+        $questionsetId = $this->faker->uuid;
+        $questionText = '<p>Albert Einstein formula: <span class="math_container">\(E=mc^2\)</span></p>';
+        $question = QuestionDataObject::create($questionText, $questionsetId);
+
+        $expectedParams = ['json' => (object)[
+            'title' => '<p>Albert Einstein formula: $$E=mc^2$$</p>',
+            'metadata' => MetadataDataObject::create(),
+        ]];
+
+        $client = $this->getMockBuilder(Client::class)
+            ->setMethods(['request'])
+            ->getMock();
+
+        $client
+            ->expects($this->once())
+            ->method('request')
+            ->with("POST", sprintf(QuestionBankAdapter::QUESTIONSET_QUESTIONS, $questionsetId), $expectedParams)
+            ->willReturn(
+                new Response(StatusCode::OK, [], '{"metadata":{"keywords":[],"images": []},"id":"d8884054-5fb4-4f4e-9fd6-6bceb85ee57d","title":"<p>Albert Einstein formula: $$E=mc^2$$<\/p>","questionSetId":"cebfd105-d5e5-4158-9568-2f8a1252ccb4"}')
+            );
+
+        /** @var ClientInterface $client */
+        $adapter = new QuestionBankAdapter($client);
+        $savedQuestion = $adapter->storeQuestion($question);
+        $this->assertEquals(get_class($savedQuestion), QuestionDataObject::class);
+        $this->assertEquals('<p>Albert Einstein formula: $$E=mc^2$$</p>', $savedQuestion->text);
+        $this->assertEquals('d8884054-5fb4-4f4e-9fd6-6bceb85ee57d', $savedQuestion->id);
+        $this->assertEquals('cebfd105-d5e5-4158-9568-2f8a1252ccb4', $savedQuestion->questionSetId);
+        $this->assertTrue($savedQuestion->wasRecentlyCreated);
+    }
+
+    /**
+     * @test
+     */
+    public function createQuestionWithMathWithoutReplacment()
+    {
+        $questionsetId = $this->faker->uuid;
+        $questionText = '<p>Albert Einstein formula: <span class="math_container">\(E=mc^2\)</span></p>';
+        $question = QuestionDataObject::create($questionText, $questionsetId);
+        $question->stripMathContainerElements = false;
+
+        $expectedParams = ['json' => (object)[
+            'title' => $questionText,
+            'metadata' => MetadataDataObject::create(),
+        ]];
+
+        $client = $this->getMockBuilder(Client::class)
+            ->setMethods(['request'])
+            ->getMock();
+
+        $client
+            ->expects($this->once())
+            ->method('request')
+            ->with("POST", sprintf(QuestionBankAdapter::QUESTIONSET_QUESTIONS, $questionsetId), $expectedParams)
+            ->willReturn(
+                new Response(StatusCode::OK, [], '{"metadata":{"keywords":[],"images": []},"id":"d8884054-5fb4-4f4e-9fd6-6bceb85ee57d","title":"<p>Albert Einstein formula: <span class=\"math_container\">\\\(E=mc^2\\\)<\/span><\/p>","questionSetId":"cebfd105-d5e5-4158-9568-2f8a1252ccb4"}')
+            );
+
+        /** @var ClientInterface $client */
+        $adapter = new QuestionBankAdapter($client);
+        $savedQuestion = $adapter->storeQuestion($question);
+        $this->assertEquals(get_class($savedQuestion), QuestionDataObject::class);
+        $this->assertEquals($questionText, $savedQuestion->text);
+        $this->assertEquals('d8884054-5fb4-4f4e-9fd6-6bceb85ee57d', $savedQuestion->id);
+        $this->assertEquals('cebfd105-d5e5-4158-9568-2f8a1252ccb4', $savedQuestion->questionSetId);
+        $this->assertTrue($savedQuestion->wasRecentlyCreated);
+    }
+
+    /**
+     * @test
+     */
     public function createAnswer()
     {
         $client = $this->getClient([
@@ -355,6 +427,7 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
      */
     public function getQuestionsetsWithSearch()
     {
+        /** @var ClientInterface $client */
         $client = $this->createMock(ClientInterface::class);
         $client->method("request")
             ->with("GET", QuestionBankAdapter::QUESTIONSETS, ['query' => ['search' => 'Nytt']])
