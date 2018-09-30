@@ -117,6 +117,7 @@ class CreateTraitTest extends QuestionBankTestCase
             'color' => $color,
             'maxWeight' => $maxWeight,
         ]);
+        $secondTruck = Truck::create($color, $maxWeight);
 
         /** @var Cargo $cargo */
         $cargo = Cargo::create([
@@ -124,6 +125,7 @@ class CreateTraitTest extends QuestionBankTestCase
         ]);
 
         $truck->addCargo($cargo);
+        $secondTruck->addCargo($cargo);
 
         $toArray = [
             'color' => $color,
@@ -144,6 +146,7 @@ class CreateTraitTest extends QuestionBankTestCase
         ];
 
         $this->assertEquals($toArray, $truck->toArray());
+        $this->assertEquals($toArray, $secondTruck->toArray());
 
         $content = new Content();
         $content->type = "Glass";
