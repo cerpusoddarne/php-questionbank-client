@@ -518,7 +518,7 @@ class QuestionBankAdapter implements QuestionBankContract
     public function stripMathContainer($text): string
     {
         $pattern = [
-            '/<span\s+class="math_container"\s*>([\s\S]+?)<\/span>/i',
+            '/<span.+?class=.math_container.*?>([\s\S]+?)<\/span>/i',
             '/\${2}\\\\\(([\s\S]+?)\\\\\)\${2}/i',
         ];
         $replace = '\\$\\$$1\\$\\$';
