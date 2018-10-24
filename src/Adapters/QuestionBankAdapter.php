@@ -524,4 +524,13 @@ class QuestionBankAdapter implements QuestionBankContract
         $replace = '\\$\\$$1\\$\\$';
         return preg_replace($pattern, $replace, $text);
     }
+
+    public function convertMathToInlineDisplay($text)
+    {
+        $pattern = [
+            '/\$\$(.+?)\$\$/i',
+        ];
+        $replace = '\\\\\\\\( $1 \\\\\\\\)';
+        return preg_replace($pattern, $replace, $text);
+    }
 }
