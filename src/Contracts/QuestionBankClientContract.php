@@ -2,18 +2,12 @@
 
 namespace Cerpus\QuestionBankClient\Contracts;
 
-use Cerpus\QuestionBankClient\DataObjects\OauthSetup;
-use GuzzleHttp\ClientInterface;
+use Cerpus\Helper\Contracts\HelperClientContract;
 
 /**
  * Interface QuestionBankClientContract
  * @package Cerpus\CoreClient\Contracts
  */
-interface QuestionBankClientContract
+interface QuestionBankClientContract extends HelperClientContract
 {
-    /**
-     * @param OauthSetup $config
-     * @return ClientInterface
-     */
-    public static function getClient(OauthSetup $config): ClientInterface;
 }

@@ -3,7 +3,7 @@
 namespace Cerpus\QuestionBankClient\DataObjects;
 
 
-use Cerpus\QuestionBankClient\Traits\CreateTrait;
+use Cerpus\Helper\Traits\CreateTrait;
 
 /**
  * Class SearchDataObject

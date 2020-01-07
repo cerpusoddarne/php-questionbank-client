@@ -3,14 +3,14 @@
 namespace Cerpus\QuestionBankClient\Providers;
 
 
-use Cerpus\QuestionBankClient\Clients\Client;
-use Cerpus\QuestionBankClient\Clients\Oauth1Client;
-use Cerpus\QuestionBankClient\Clients\Oauth2Client;
+use Cerpus\Helper\Clients\Client;
+use Cerpus\Helper\Clients\Oauth1Client;
+use Cerpus\Helper\Clients\Oauth2Client;
+use Cerpus\Helper\DataObjects\OauthSetup;
 use Cerpus\QuestionBankClient\Contracts\QuestionBankClientContract;
 use Cerpus\QuestionBankClient\Contracts\QuestionBankContract;
 use Cerpus\QuestionBankClient\Exceptions\InvalidConfigException;
 use Cerpus\QuestionBankClient\QuestionBankClient;
-use Cerpus\QuestionBankClient\DataObjects\OauthSetup;
 use Illuminate\Support\ServiceProvider;
 
 class QuestionBankClientServiceProvider extends ServiceProvider
@@ -96,6 +96,11 @@ class QuestionBankClientServiceProvider extends ServiceProvider
         ];
     }
 
+    /**
+     * @param $config
+     * @param $adapter
+     * @throws InvalidConfigException
+     */
     private function checkConfig($config, $adapter)
     {
         if (!array_key_exists($adapter, $config['adapters']) || !is_array($config['adapters'][$adapter])) {
