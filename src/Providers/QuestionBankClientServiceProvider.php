@@ -48,10 +48,10 @@ class QuestionBankClientServiceProvider extends ServiceProvider
             return $clientClass::getClient(OauthSetup::create([
                 'coreUrl' => $adapterConfig['base-url'],
                 'authUrl' => $adapterConfig['auth-url'],
-                'authUser' => $adapterConfig['auth-user'],
-                'authSecret' => $adapterConfig['auth-secret'],
-                'authToken' => $adapterConfig['auth-token'],
-                'authTokenSecret' => $adapterConfig['auth-token_secret'],
+                'key' => $adapterConfig['auth-user'],
+                'secret' => $adapterConfig['auth-secret'],
+                'token' => $adapterConfig['auth-token'],
+                'tokenSecret' => $adapterConfig['auth-token_secret'],
             ]));
         });
 
