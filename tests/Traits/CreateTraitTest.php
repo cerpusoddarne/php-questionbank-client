@@ -2,7 +2,7 @@
 
 namespace Cerpus\QuestionBankClientTests\Traits;
 
-use Cerpus\QuestionBankClient\Traits\CreateTrait;
+use Cerpus\Helper\Traits\CreateTrait;
 use Cerpus\QuestionBankClientTests\Utils\QuestionBankTestCase;
 use Cerpus\QuestionBankClientTests\Utils\Traits\WithFaker;
 
@@ -32,11 +32,6 @@ class Truck
     public function addCargo(Cargo $cargo)
     {
         $this->cargo->push($cargo);
-    }
-
-    public function setIsDirty($isDirty)
-    {
-        $this->isDirty = $isDirty;
     }
 }
 
@@ -136,13 +131,9 @@ class CreateTraitTest extends QuestionBankTestCase
                     'weight' => $weight,
                     'fragile' => false,
                     'content' => [],
-                    'wasRecentlyCreated' => false,
-                    'isDirty' => true,
                 ]
             ],
             'full' => false,
-            'wasRecentlyCreated' => false,
-            'isDirty' => true,
         ];
 
         $this->assertEquals($toArray, $truck->toArray());

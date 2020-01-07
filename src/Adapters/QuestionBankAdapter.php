@@ -2,6 +2,8 @@
 
 namespace Cerpus\QuestionBankClient\Adapters;
 
+use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
 use Log;
@@ -14,7 +16,6 @@ use Cerpus\QuestionBankClient\DataObjects\SearchDataObject;
 use Cerpus\QuestionBankClient\Exceptions\InvalidSearchParametersException;
 use GuzzleHttp\ClientInterface;
 use Illuminate\Support\Collection;
-use GuzzleHttp\Promise;
 
 /**
  * Class QuestionBankAdapter
@@ -25,7 +26,7 @@ class QuestionBankAdapter implements QuestionBankContract
     /** @var ClientInterface */
     private $client;
 
-    /** @var \Exception */
+    /** @var Exception */
     private $error;
 
     const QUESTIONSETS = '/v1/question_sets';
@@ -137,9 +138,11 @@ class QuestionBankAdapter implements QuestionBankContract
     }
 
     /**
-     * @return Collection[QuestionsetDataObject]
      * @param Collection|SearchDataObject $search = null
      * @param boolean $includeQuestions = true
+     * @return Collection[QuestionsetDataObject]
+     * @throws InvalidSearchParametersException
+     * @throws GuzzleException
      */
     public function getQuestionsets($search = null, $includeQuestions = true): Collection
     {
@@ -162,6 +165,7 @@ class QuestionBankAdapter implements QuestionBankContract
      * @param string $questionsetId
      * @param bool $includeQuestions
      * @return QuestionsetDataObject
+     * @throws GuzzleException
      */
     public function getQuestionset($questionsetId, $includeQuestions = true): QuestionsetDataObject
     {
@@ -178,6 +182,7 @@ class QuestionBankAdapter implements QuestionBankContract
     /**
      * @param QuestionsetDataObject $questionset
      * @return QuestionsetDataObject
+     * @throws GuzzleException
      */
     public function storeQuestionset(QuestionsetDataObject $questionset): QuestionsetDataObject
     {
@@ -191,6 +196,7 @@ class QuestionBankAdapter implements QuestionBankContract
     /**
      * @param QuestionsetDataObject $questionset
      * @return QuestionsetDataObject
+     * @throws GuzzleException
      */
     private function createQuestionset(QuestionsetDataObject $questionset): QuestionsetDataObject
     {
@@ -212,6 +218,7 @@ class QuestionBankAdapter implements QuestionBankContract
     /**
      * @param QuestionsetDataObject $questionset
      * @return QuestionsetDataObject
+     * @throws GuzzleException
      */
     private function updateQuestionset(QuestionsetDataObject $questionset): QuestionsetDataObject
     {
@@ -240,6 +247,7 @@ class QuestionBankAdapter implements QuestionBankContract
      * @param $questionsetId
      * @param boolean $concurrent
      * @return Collection[QuestionDataObject]
+     * @throws GuzzleException
      */
     public function getQuestions($questionsetId, $concurrent = false): Collection
     {
@@ -291,12 +299,12 @@ class QuestionBankAdapter implements QuestionBankContract
                 return [$key => $answers];
             });
 
-            $questions->each(function ($q) use ($answers) {
+            $questions->each(function (QuestionDataObject $q) use ($answers) {
                 $q->addAnswers($answers[$q->id]);
 
                 return $q;
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error(__METHOD__ . ': QuestionBankAdapter error: ' . $e->getMessage());
         }
 
@@ -307,6 +315,7 @@ class QuestionBankAdapter implements QuestionBankContract
      * @param $questionId
      * @param bool $includeAnswers
      * @return QuestionDataObject
+     * @throws GuzzleException
      */
     public function getQuestion($questionId, $includeAnswers = true): QuestionDataObject
     {
@@ -322,6 +331,7 @@ class QuestionBankAdapter implements QuestionBankContract
     /**
      * @param QuestionDataObject $question
      * @return QuestionDataObject
+     * @throws GuzzleException
      */
     public function storeQuestion(QuestionDataObject $question): QuestionDataObject
     {
@@ -335,6 +345,7 @@ class QuestionBankAdapter implements QuestionBankContract
     /**
      * @param QuestionDataObject $question
      * @return QuestionDataObject
+     * @throws GuzzleException
      */
     private function createQuestion(QuestionDataObject $question): QuestionDataObject
     {
@@ -358,6 +369,7 @@ class QuestionBankAdapter implements QuestionBankContract
     /**
      * @param QuestionDataObject $question
      * @return QuestionDataObject
+     * @throws GuzzleException
      */
     private function updateQuestion(QuestionDataObject $question): QuestionDataObject
     {
@@ -387,6 +399,7 @@ class QuestionBankAdapter implements QuestionBankContract
     /**
      * @param $answerId
      * @return AnswerDataObject
+     * @throws GuzzleException
      */
     public function getAnswer($answerId): AnswerDataObject
     {
@@ -398,6 +411,7 @@ class QuestionBankAdapter implements QuestionBankContract
     /**
      * @param $questionId
      * @return Collection[AnswerDataObject]
+     * @throws GuzzleException
      */
     public function getAnswersByQuestion($questionId): Collection
     {
@@ -411,6 +425,7 @@ class QuestionBankAdapter implements QuestionBankContract
     /**
      * @param AnswerDataObject $answer
      * @return AnswerDataObject
+     * @throws GuzzleException
      */
     public function storeAnswer(AnswerDataObject $answer): AnswerDataObject
     {
@@ -424,6 +439,7 @@ class QuestionBankAdapter implements QuestionBankContract
     /**
      * @param AnswerDataObject $answer
      * @return AnswerDataObject
+     * @throws GuzzleException
      */
     private function createAnswer(AnswerDataObject $answer): AnswerDataObject
     {
@@ -448,6 +464,7 @@ class QuestionBankAdapter implements QuestionBankContract
     /**
      * @param AnswerDataObject $answer
      * @return AnswerDataObject
+     * @throws GuzzleException
      */
     private function updateAnswer(AnswerDataObject $answer): AnswerDataObject
     {
@@ -480,7 +497,7 @@ class QuestionBankAdapter implements QuestionBankContract
      * @param Collection|null $searchParams
      * @return Collection
      * @throws InvalidSearchParametersException
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     public function searchQuestions($searchParams): Collection
     {
@@ -502,6 +519,8 @@ class QuestionBankAdapter implements QuestionBankContract
     /**
      * @param null $searchParams
      * @return Collection
+     * @throws InvalidSearchParametersException
+     * @throws GuzzleException
      */
     public function searchAnswers($searchParams): Collection
     {

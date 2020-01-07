@@ -3,7 +3,7 @@
 namespace Cerpus\QuestionBankClient\DataObjects;
 
 
-use Cerpus\QuestionBankClient\Traits\CreateTrait;
+use Cerpus\Helper\Traits\CreateTrait;
 use Cerpus\QuestionBankClient\Traits\MetadataTrait;
 use Illuminate\Support\Collection;
 
@@ -17,7 +17,7 @@ class QuestionDataObject extends BaseDataObject
 {
     use CreateTrait, MetadataTrait;
 
-    public $text, $questionSetId, $id, $answerCount;
+    public $text, $questionSetId, $id;
     public $stripMathContainerElements = true;
 
     private $answers;
@@ -30,7 +30,7 @@ class QuestionDataObject extends BaseDataObject
     }
 
     /**
-     * @return array
+     * @return Collection
      */
     public function getAnswers()
     {
