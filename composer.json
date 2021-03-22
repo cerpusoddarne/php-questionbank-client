@@ -3,7 +3,7 @@
   "description": "Client to talk do the Cerpus Questionbank Service",
   "require": {
     "cerpus/cerpushelper": "^1.4",
-    "ext-json": "^1.6",
+    "ext-json": "*",
     "illuminate/support": "^6.0"
   },
   "require-dev": {
