@@ -2,9 +2,9 @@
   "name": "cerpus/questionbank-client",
   "description": "Client to talk do the Cerpus Questionbank Service",
   "require": {
-    "cerpus/cerpushelper": "^1.4",
+    "cerpus/cerpushelper": "^1.5",
     "ext-json": "*",
-    "illuminate/support": "^6.0"
+    "illuminate/support": "*"
   },
   "require-dev": {
     "phpunit/phpunit": "^6.4",
