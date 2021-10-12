@@ -1,6 +1,7 @@
 {
   "name": "cerpus/questionbank-client",
   "description": "Client to talk do the Cerpus Questionbank Service",
+  "license": "GPL-3.0-only",
   "require": {
     "cerpus/cerpushelper": "^1.5",
     "ext-json": "*",
@@ -27,15 +28,5 @@
     "psr-4": {
       "Cerpus\\QuestionBankClientTests\\": "tests"
     }
-  },
-  "repositories": [
-    {
-      "type": "composer",
-      "url": "https://composer.cerpus.net/"
-    },
-    {
-      "type": "composer",
-      "url": "https://composer-3rdparty.cerpus.net/"
-    }
-  ]
+  }
 }
