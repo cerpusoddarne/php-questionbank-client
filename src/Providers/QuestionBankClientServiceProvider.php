@@ -8,9 +8,9 @@ use Cerpus\QuestionBankClient\Clients\Oauth1Client;
 use Cerpus\QuestionBankClient\Clients\Oauth2Client;
 use Cerpus\QuestionBankClient\Contracts\QuestionBankClientContract;
 use Cerpus\QuestionBankClient\Contracts\QuestionBankContract;
+use Cerpus\QuestionBankClient\DataObjects\OauthSetup;
 use Cerpus\QuestionBankClient\Exceptions\InvalidConfigException;
 use Cerpus\QuestionBankClient\QuestionBankClient;
-use Cerpus\QuestionBankClient\DataObjects\OauthSetup;
 use Illuminate\Support\ServiceProvider;
 
 class QuestionBankClientServiceProvider extends ServiceProvider
@@ -30,7 +30,8 @@ class QuestionBankClientServiceProvider extends ServiceProvider
 
             $this->checkConfig($questionbankClientConfig, $adapter);
 
-            $adapterConfig = array_merge($this->getDefaultClientStructure(), $questionbankClientConfig["adapters"][$adapter]);
+            $adapterConfig = array_merge($this->getDefaultClientStructure(),
+                $questionbankClientConfig["adapters"][$adapter]);
             $client = strtolower($adapterConfig['auth-client']);
             /** @var QuestionBankClientContract $clientClass */
             switch ($client) {
@@ -46,12 +47,14 @@ class QuestionBankClientServiceProvider extends ServiceProvider
             }
 
             return $clientClass::getClient(OauthSetup::create([
-                'baseUrl' => $adapterConfig['base-url'],
-                'authUrl' => $adapterConfig['auth-url'],
-                'authUser' => $adapterConfig['auth-user'],
-                'authSecret' => $adapterConfig['auth-secret'],
-                'authToken' => $adapterConfig['auth-token'],
+                'baseUrl'         => $adapterConfig['base-url'],
+                'authUrl'         => $adapterConfig['auth-url'],
+                'authUser'        => $adapterConfig['auth-user'],
+                'authSecret'      => $adapterConfig['auth-secret'],
+                'authToken'       => $adapterConfig['auth-token'],
                 'authTokenSecret' => $adapterConfig['auth-token_secret'],
+                'key'             => $adapterConfig['key'],
+                'secret'          => $adapterConfig['secret'],
             ]));
         });
 
@@ -63,6 +66,7 @@ class QuestionBankClientServiceProvider extends ServiceProvider
             $this->checkConfig($questionbankClientConfig, $adapter);
 
             $adapterConfig = $questionbankClientConfig["adapters"][$adapter];
+
             return new $adapterConfig['handler']($client);
         });
 
@@ -85,14 +89,16 @@ class QuestionBankClientServiceProvider extends ServiceProvider
     private function getDefaultClientStructure()
     {
         return [
-            "handler" => null,
-            "base-url" => "",
-            "auth-client" => "none",
-            "auth-url" => "",
-            "auth-user" => "",
-            "auth-secret" => "",
-            "auth-token" => "",
+            "handler"           => null,
+            "base-url"          => "",
+            "auth-client"       => "none",
+            "auth-url"          => "",
+            "auth-user"         => "",
+            "auth-secret"       => "",
+            "auth-token"        => "",
             "auth-token_secret" => "",
+            "key"               => "",
+            "secret"            => "",
         ];
     }
 

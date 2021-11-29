@@ -451,7 +451,7 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $question = $questions->first();
         $this->assertCount(1, $questions);
         $this->assertEquals(get_class($question), QuestionDataObject::class);
-        $this->assertAttributeEquals("Updated question", 'text', $question);
+        $this->assertEquals("Updated question", $question->text);
         $this->assertCount(2, $question->getAnswers());
 
         $search = SearchDataObject::create('search', 'NoHit');
@@ -463,10 +463,11 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
 
     /**
      * @test
-     * @expectedException GuzzleHttp\Exception\RequestException
      */
     public function getQuestionsWithEmptySearchString()
     {
+        $this->expectException(RequestException::class);
+
         $client = $this->getClient([
             new Response(StatusCode::BAD_REQUEST, [], '{"timestamp": "2018-07-02T11:05:54.215+0000","status": 400,"error": "Bad Request","message": "Need to specify either searchString, keywords or questionSetId","path": "/v1/questions"}'),
         ]);
@@ -494,15 +495,16 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $answer = $answers->first();
         $this->assertCount(1, $answers);
         $this->assertEquals(get_class($answer), AnswerDataObject::class);
-        $this->assertAttributeEquals("Correct answer", 'text', $answer);
+        $this->assertEquals("Correct answer",$answer->text);
     }
 
     /**
      * @test
-     * @expectedException GuzzleHttp\Exception\RequestException
      */
     public function getAnswersWithEmptySearchString()
     {
+        $this->expectException(RequestException::class);
+
         $client = $this->getClient([
             new Response(StatusCode::BAD_REQUEST, [], '{"timestamp": "2018-07-02T11:20:27.615+0000","status": 400,"error": "Bad Request","message": "Need to specify either searchString, keywords or questionId","path": "/v1/answers"}'),
         ]);
