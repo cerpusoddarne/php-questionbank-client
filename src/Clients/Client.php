@@ -20,10 +20,10 @@ class Client implements QuestionBankClientContract
      *
      * @return ClientInterface
      */
-    public static function getClient(OauthSetup $config): ClientInterface
+    public static function getClient(OauthSetup $config) :ClientInterface
     {
         $clientConfig = [
-            'base_uri'              => $config->coreUrl,
+            'base_uri' => $config->coreUrl,
             RequestOptions::HEADERS => [
                 'Content-Type' => 'application/json',
             ],

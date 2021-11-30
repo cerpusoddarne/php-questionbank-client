@@ -33,8 +33,8 @@ class QuestionBankClientServiceProvider extends ServiceProvider
 
             return Client::getClient(OauthSetup::create([
                 'coreUrl' => $adapterConfig['base-url'],
-                'key'     => $adapterConfig['auth-user'],
-                'secret'  => $adapterConfig['auth-secret'],
+                'key' => $adapterConfig['auth-user'],
+                'secret' => $adapterConfig['auth-secret'],
             ]));
         });
 
@@ -69,8 +69,8 @@ class QuestionBankClientServiceProvider extends ServiceProvider
     private function getDefaultClientStructure()
     {
         return [
-            "base-url"    => "",
-            "auth-user"   => "",
+            "base-url" => "",
+            "auth-user" => "",
             "auth-secret" => "",
         ];
     }
@@ -83,7 +83,7 @@ class QuestionBankClientServiceProvider extends ServiceProvider
      */
     private function checkConfig($config, $adapter)
     {
-        if (!array_key_exists($adapter, $config['adapters']) || !is_array($config['adapters'][$adapter])) {
+        if (! array_key_exists($adapter, $config['adapters']) || ! is_array($config['adapters'][$adapter])) {
             throw new InvalidConfigException(sprintf("Could not find the config for the adapter '%s'", $adapter));
         }
     }

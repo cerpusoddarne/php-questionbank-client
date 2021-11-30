@@ -13,19 +13,18 @@ use Illuminate\Support\Facades\Facade;
 class QuestionBankClient extends Facade
 {
 
-    protected $defer = true;
-
     /**
      * @var string
      */
     static $alias = "questionbank-client";
+    protected $defer = true;
 
     /**
      * @return string
      */
-    protected static function getFacadeAccessor()
+    public static function getConfigPath()
     {
-        return QuestionBankContract::class;
+        return self::getBasePath().'/src/Config/'.self::$alias.'.php';
     }
 
     /**
@@ -39,8 +38,8 @@ class QuestionBankClient extends Facade
     /**
      * @return string
      */
-    public static function getConfigPath()
+    protected static function getFacadeAccessor()
     {
-        return self::getBasePath() . '/src/Config/' . self::$alias . '.php';
+        return QuestionBankContract::class;
     }
 }

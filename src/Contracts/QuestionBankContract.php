@@ -14,33 +14,33 @@ use Illuminate\Support\Collection;
 interface QuestionBankContract
 {
 
-    public function getQuestionsets($searchParams = null): Collection;
+    public function getQuestionsets($searchParams = null) :Collection;
 
-    public function getQuestionset($questionsetId) : QuestionsetDataObject;
+    public function getQuestionset($questionsetId) :QuestionsetDataObject;
 
-    public function storeQuestionset(QuestionsetDataObject $questionset): QuestionsetDataObject;
+    public function storeQuestionset(QuestionsetDataObject $questionset) :QuestionsetDataObject;
 
     public function deleteQuestionset($id);
 
-    public function getQuestions($questionsetId): Collection;
+    public function getQuestions($questionsetId) :Collection;
 
-    public function getQuestion($questionId): QuestionDataObject;
+    public function getQuestion($questionId) :QuestionDataObject;
 
-    public function storeQuestion(QuestionDataObject $question): QuestionDataObject;
+    public function storeQuestion(QuestionDataObject $question) :QuestionDataObject;
 
     public function deleteQuestion($questionId);
 
-    public function getAnswer($answerId): AnswerDataObject;
+    public function getAnswer($answerId) :AnswerDataObject;
 
-    public function getAnswersByQuestion($questionId): Collection;
+    public function getAnswersByQuestion($questionId) :Collection;
 
-    public function storeAnswer(AnswerDataObject $answer): AnswerDataObject;
+    public function storeAnswer(AnswerDataObject $answer) :AnswerDataObject;
 
     public function deleteAnswer($answerId);
 
-    public function searchQuestions($searchParams): Collection;
+    public function searchQuestions($searchParams) :Collection;
 
-    public function searchAnswers($searchParams): Collection;
+    public function searchAnswers($searchParams) :Collection;
 
-    public function stripMathContainer($haystack): string;
+    public function stripMathContainer($haystack) :string;
 }

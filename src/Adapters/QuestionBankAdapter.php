@@ -2,11 +2,6 @@
 
 namespace Cerpus\QuestionBankClient\Adapters;
 
-use Exception;
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Pool;
-use GuzzleHttp\Psr7\Request;
-use Log;
 use Cerpus\QuestionBankClient\Contracts\QuestionBankContract;
 use Cerpus\QuestionBankClient\DataObjects\AnswerDataObject;
 use Cerpus\QuestionBankClient\DataObjects\MetadataDataObject;
@@ -14,8 +9,13 @@ use Cerpus\QuestionBankClient\DataObjects\QuestionDataObject;
 use Cerpus\QuestionBankClient\DataObjects\QuestionsetDataObject;
 use Cerpus\QuestionBankClient\DataObjects\SearchDataObject;
 use Cerpus\QuestionBankClient\Exceptions\InvalidSearchParametersException;
+use Exception;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Pool;
+use GuzzleHttp\Psr7\Request;
 use Illuminate\Support\Collection;
+use Log;
 
 /**
  * Class QuestionBankAdapter
@@ -42,7 +42,7 @@ class QuestionBankAdapter implements QuestionBankContract
 
     /**
      * QuestionBankAdapter constructor.
-     * @param ClientInterface $client
+     * @param  ClientInterface  $client
      */
     public function __construct(ClientInterface $client)
     {
@@ -50,7 +50,7 @@ class QuestionBankAdapter implements QuestionBankContract
     }
 
     /**
-     * @param object $metadata
+     * @param  object  $metadata
      * @return MetadataDataObject
      */
     private function transformMetadata($metadata)
@@ -62,7 +62,7 @@ class QuestionBankAdapter implements QuestionBankContract
     }
 
     /**
-     * @param object $questionValues
+     * @param  object  $questionValues
      * @return QuestionsetDataObject
      */
     private function mapQuestionsetResponseToDataObject($questionValues)
@@ -70,14 +70,14 @@ class QuestionBankAdapter implements QuestionBankContract
         $questionset = QuestionsetDataObject::create([
             'id' => $questionValues->id,
             'title' => $questionValues->title,
-            'questionCount' => property_exists($questionValues, 'questionCount') ? (int)$questionValues->questionCount : null,
+            'questionCount' => property_exists($questionValues, 'questionCount') ? (int) $questionValues->questionCount : null,
         ]);
         $questionset->addMetadata($this->transformMetadata($questionValues->metadata));
         return $questionset;
     }
 
     /**
-     * @param object $questionValues
+     * @param  object  $questionValues
      * @return QuestionDataObject
      */
     private function mapQuestionResponseToDataObject($questionValues)
@@ -92,10 +92,10 @@ class QuestionBankAdapter implements QuestionBankContract
     }
 
     /**
-     * @param object $answerValues
+     * @param  object  $answerValues
      * @return AnswerDataObject
      */
-    private function mapAnswerResponseToDataObject($answerValues): AnswerDataObject
+    private function mapAnswerResponseToDataObject($answerValues) :AnswerDataObject
     {
         $answer = AnswerDataObject::create([
             'id' => $answerValues->id,
@@ -108,13 +108,13 @@ class QuestionBankAdapter implements QuestionBankContract
     }
 
     /**
-     * @param Collection|SearchDataObject $search
+     * @param  Collection|SearchDataObject  $search
      * @return array
      * @throws InvalidSearchParametersException
      */
-    private function traverseSearch($search): array
+    private function traverseSearch($search) :array
     {
-        if (!is_object($search) || !in_array(get_class($search), [
+        if (! is_object($search) || ! in_array(get_class($search), [
                 Collection::class,
                 SearchDataObject::class,
             ])) {
@@ -138,15 +138,15 @@ class QuestionBankAdapter implements QuestionBankContract
     }
 
     /**
-     * @param Collection|SearchDataObject $search = null
-     * @param boolean $includeQuestions = true
+     * @param  Collection|SearchDataObject  $search  = null
+     * @param  boolean  $includeQuestions  = true
      * @return Collection[QuestionsetDataObject]
      * @throws InvalidSearchParametersException
      * @throws GuzzleException
      */
-    public function getQuestionsets($search = null, $includeQuestions = true): Collection
+    public function getQuestionsets($search = null, $includeQuestions = true) :Collection
     {
-        $additionalParameters = !is_null($search) ? $this->traverseSearch($search) : [];
+        $additionalParameters = ! is_null($search) ? $this->traverseSearch($search) : [];
         $response = $this->client->request("GET", self::QUESTIONSETS, $additionalParameters);
         $data = collect(\GuzzleHttp\json_decode($response->getBody()));
         $questionsets = $data->map(function ($questionset) {
@@ -162,12 +162,12 @@ class QuestionBankAdapter implements QuestionBankContract
     }
 
     /**
-     * @param string $questionsetId
-     * @param bool $includeQuestions
+     * @param  string  $questionsetId
+     * @param  bool  $includeQuestions
      * @return QuestionsetDataObject
      * @throws GuzzleException
      */
-    public function getQuestionset($questionsetId, $includeQuestions = true): QuestionsetDataObject
+    public function getQuestionset($questionsetId, $includeQuestions = true) :QuestionsetDataObject
     {
         $response = $this->client->request("GET", sprintf(self::QUESTIONSET, $questionsetId));
         $data = \GuzzleHttp\json_decode($response->getBody());
@@ -180,11 +180,11 @@ class QuestionBankAdapter implements QuestionBankContract
     }
 
     /**
-     * @param QuestionsetDataObject $questionset
+     * @param  QuestionsetDataObject  $questionset
      * @return QuestionsetDataObject
      * @throws GuzzleException
      */
-    public function storeQuestionset(QuestionsetDataObject $questionset): QuestionsetDataObject
+    public function storeQuestionset(QuestionsetDataObject $questionset) :QuestionsetDataObject
     {
         if (empty($questionset->id)) {
             return $this->createQuestionset($questionset);
@@ -194,16 +194,16 @@ class QuestionBankAdapter implements QuestionBankContract
     }
 
     /**
-     * @param QuestionsetDataObject $questionset
+     * @param  QuestionsetDataObject  $questionset
      * @return QuestionsetDataObject
      * @throws GuzzleException
      */
-    private function createQuestionset(QuestionsetDataObject $questionset): QuestionsetDataObject
+    private function createQuestionset(QuestionsetDataObject $questionset) :QuestionsetDataObject
     {
         if (is_null($questionset->getMetadata())) {
             $questionset->addMetadata(MetadataDataObject::create());
         }
-        $questionsetStructure = (object)[
+        $questionsetStructure = (object) [
             'title' => $questionset->title,
             'metadata' => $questionset->getMetadata(),
         ];
@@ -216,16 +216,16 @@ class QuestionBankAdapter implements QuestionBankContract
     }
 
     /**
-     * @param QuestionsetDataObject $questionset
+     * @param  QuestionsetDataObject  $questionset
      * @return QuestionsetDataObject
      * @throws GuzzleException
      */
-    private function updateQuestionset(QuestionsetDataObject $questionset): QuestionsetDataObject
+    private function updateQuestionset(QuestionsetDataObject $questionset) :QuestionsetDataObject
     {
         if (is_null($questionset->getMetadata())) {
             $questionset->addMetadata(MetadataDataObject::create());
         }
-        $questionsetStructure = (object)[
+        $questionsetStructure = (object) [
             'title' => $questionset->title,
             'metadata' => $questionset->getMetadata(),
         ];
@@ -245,11 +245,11 @@ class QuestionBankAdapter implements QuestionBankContract
 
     /**
      * @param $questionsetId
-     * @param boolean $concurrent
+     * @param  boolean  $concurrent
      * @return Collection[QuestionDataObject]
      * @throws GuzzleException
      */
-    public function getQuestions($questionsetId, $concurrent = false): Collection
+    public function getQuestions($questionsetId, $concurrent = false) :Collection
     {
         $response = $this->client->request("GET", sprintf(self::QUESTIONSET_QUESTIONS, $questionsetId));
         $data = collect(\GuzzleHttp\json_decode($response->getBody()));
@@ -274,10 +274,10 @@ class QuestionBankAdapter implements QuestionBankContract
     }
 
     /**
-     * @param Collection $questions
+     * @param  Collection  $questions
      * @return Collection
      */
-    protected function asyncAddAnswers(Collection $questions): Collection
+    protected function asyncAddAnswers(Collection $questions) :Collection
     {
         try {
             $client = $this->client;
@@ -305,7 +305,7 @@ class QuestionBankAdapter implements QuestionBankContract
                 return $q;
             });
         } catch (Exception $e) {
-            Log::error(__METHOD__ . ': QuestionBankAdapter error: ' . $e->getMessage());
+            Log::error(__METHOD__.': QuestionBankAdapter error: '.$e->getMessage());
         }
 
         return $questions;
@@ -313,11 +313,11 @@ class QuestionBankAdapter implements QuestionBankContract
 
     /**
      * @param $questionId
-     * @param bool $includeAnswers
+     * @param  bool  $includeAnswers
      * @return QuestionDataObject
      * @throws GuzzleException
      */
-    public function getQuestion($questionId, $includeAnswers = true): QuestionDataObject
+    public function getQuestion($questionId, $includeAnswers = true) :QuestionDataObject
     {
         $response = $this->client->request("GET", sprintf(self::QUESTION, $questionId));
         $data = \GuzzleHttp\json_decode($response->getBody());
@@ -329,11 +329,11 @@ class QuestionBankAdapter implements QuestionBankContract
     }
 
     /**
-     * @param QuestionDataObject $question
+     * @param  QuestionDataObject  $question
      * @return QuestionDataObject
      * @throws GuzzleException
      */
-    public function storeQuestion(QuestionDataObject $question): QuestionDataObject
+    public function storeQuestion(QuestionDataObject $question) :QuestionDataObject
     {
         if (empty($question->id)) {
             return $this->createQuestion($question);
@@ -343,18 +343,18 @@ class QuestionBankAdapter implements QuestionBankContract
     }
 
     /**
-     * @param QuestionDataObject $question
+     * @param  QuestionDataObject  $question
      * @return QuestionDataObject
      * @throws GuzzleException
      */
-    private function createQuestion(QuestionDataObject $question): QuestionDataObject
+    private function createQuestion(QuestionDataObject $question) :QuestionDataObject
     {
         if (is_null($question->getMetadata())) {
             $question->addMetadata(MetadataDataObject::create());
         }
 
         $questionText = $question->stripMathContainerElements === true ? $this->stripMathContainer($question->text) : $question->text;
-        $questionStructure = (object)[
+        $questionStructure = (object) [
             'title' => $questionText,
             'metadata' => $question->getMetadata(),
         ];
@@ -367,18 +367,18 @@ class QuestionBankAdapter implements QuestionBankContract
     }
 
     /**
-     * @param QuestionDataObject $question
+     * @param  QuestionDataObject  $question
      * @return QuestionDataObject
      * @throws GuzzleException
      */
-    private function updateQuestion(QuestionDataObject $question): QuestionDataObject
+    private function updateQuestion(QuestionDataObject $question) :QuestionDataObject
     {
         if (is_null($question->getMetadata())) {
             $question->addMetadata(MetadataDataObject::create());
         }
 
         $questionText = $question->stripMathContainerElements === true ? $this->stripMathContainer($question->text) : $question->text;
-        $questionStructure = (object)[
+        $questionStructure = (object) [
             'title' => $questionText,
             'metadata' => $question->getMetadata(),
         ];
@@ -401,7 +401,7 @@ class QuestionBankAdapter implements QuestionBankContract
      * @return AnswerDataObject
      * @throws GuzzleException
      */
-    public function getAnswer($answerId): AnswerDataObject
+    public function getAnswer($answerId) :AnswerDataObject
     {
         $response = $this->client->request("GET", sprintf(self::ANSWER, $answerId));
         $data = \GuzzleHttp\json_decode($response->getBody());
@@ -413,7 +413,7 @@ class QuestionBankAdapter implements QuestionBankContract
      * @return Collection[AnswerDataObject]
      * @throws GuzzleException
      */
-    public function getAnswersByQuestion($questionId): Collection
+    public function getAnswersByQuestion($questionId) :Collection
     {
         $response = $this->client->request("GET", sprintf(self::QUESTION_ANSWERS, $questionId));
         $data = collect(\GuzzleHttp\json_decode($response->getBody()));
@@ -423,11 +423,11 @@ class QuestionBankAdapter implements QuestionBankContract
     }
 
     /**
-     * @param AnswerDataObject $answer
+     * @param  AnswerDataObject  $answer
      * @return AnswerDataObject
      * @throws GuzzleException
      */
-    public function storeAnswer(AnswerDataObject $answer): AnswerDataObject
+    public function storeAnswer(AnswerDataObject $answer) :AnswerDataObject
     {
         if (empty($answer->id)) {
             return $this->createAnswer($answer);
@@ -437,20 +437,20 @@ class QuestionBankAdapter implements QuestionBankContract
     }
 
     /**
-     * @param AnswerDataObject $answer
+     * @param  AnswerDataObject  $answer
      * @return AnswerDataObject
      * @throws GuzzleException
      */
-    private function createAnswer(AnswerDataObject $answer): AnswerDataObject
+    private function createAnswer(AnswerDataObject $answer) :AnswerDataObject
     {
         if (is_null($answer->getMetadata())) {
             $answer->addMetadata(MetadataDataObject::create());
         }
 
         $answerText = $answer->stripMathContainerElements === true ? $this->stripMathContainer($answer->text) : $answer->text;
-        $answerStructure = (object)[
+        $answerStructure = (object) [
             'description' => $answerText,
-            'correctness' => !empty($answer->isCorrect) ? 100 : 0,
+            'correctness' => ! empty($answer->isCorrect) ? 100 : 0,
             'metadata' => $answer->getMetadata(),
         ];
 
@@ -462,20 +462,20 @@ class QuestionBankAdapter implements QuestionBankContract
     }
 
     /**
-     * @param AnswerDataObject $answer
+     * @param  AnswerDataObject  $answer
      * @return AnswerDataObject
      * @throws GuzzleException
      */
-    private function updateAnswer(AnswerDataObject $answer): AnswerDataObject
+    private function updateAnswer(AnswerDataObject $answer) :AnswerDataObject
     {
         if (is_null($answer->getMetadata())) {
             $answer->addMetadata(MetadataDataObject::create());
         }
 
         $answerText = $answer->stripMathContainerElements === true ? $this->stripMathContainer($answer->text) : $answer->text;
-        $answerStructure = (object)[
+        $answerStructure = (object) [
             'description' => $answerText,
-            'correctness' => !empty($answer->isCorrect) ? 100 : 0,
+            'correctness' => ! empty($answer->isCorrect) ? 100 : 0,
             'metadata' => $answer->getMetadata(),
         ];
 
@@ -494,14 +494,14 @@ class QuestionBankAdapter implements QuestionBankContract
 
 
     /**
-     * @param Collection|null $searchParams
+     * @param  Collection|null  $searchParams
      * @return Collection
      * @throws InvalidSearchParametersException
      * @throws GuzzleException
      */
-    public function searchQuestions($searchParams): Collection
+    public function searchQuestions($searchParams) :Collection
     {
-        $additionalParameters = !is_null($searchParams) ? $this->traverseSearch($searchParams) : [];
+        $additionalParameters = ! is_null($searchParams) ? $this->traverseSearch($searchParams) : [];
         $response = $this->client->request("GET", self::QUESTIONS, $additionalParameters);
         $data = collect(\GuzzleHttp\json_decode($response->getBody()));
         $questions = $data->map(function ($question) {
@@ -513,28 +513,26 @@ class QuestionBankAdapter implements QuestionBankContract
                 return $question;
             });
         return $questions;
-
     }
 
     /**
-     * @param null $searchParams
+     * @param  null  $searchParams
      * @return Collection
      * @throws InvalidSearchParametersException
      * @throws GuzzleException
      */
-    public function searchAnswers($searchParams): Collection
+    public function searchAnswers($searchParams) :Collection
     {
-        $additionalParameters = !is_null($searchParams) ? $this->traverseSearch($searchParams) : [];
+        $additionalParameters = ! is_null($searchParams) ? $this->traverseSearch($searchParams) : [];
         $response = $this->client->request("GET", self::ANSWERS, $additionalParameters);
         $data = collect(\GuzzleHttp\json_decode($response->getBody()));
         $answers = $data->map(function ($answer) {
             return $this->mapAnswerResponseToDataObject($answer);
         });
         return $answers;
-
     }
 
-    public function stripMathContainer($text): string
+    public function stripMathContainer($text) :string
     {
         $pattern = [
             '/<span.+?class=.math_container.*?>([\s\S]+?)<\/span>/i',

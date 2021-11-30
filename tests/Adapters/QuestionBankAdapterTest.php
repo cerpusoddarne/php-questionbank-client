@@ -300,7 +300,7 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
 
         $expectedParams = [
             'json' => (object) [
-                'title'    => '<p>Albert Einstein formula: $$E=mc^2$$</p>',
+                'title' => '<p>Albert Einstein formula: $$E=mc^2$$</p>',
                 'metadata' => MetadataDataObject::create(),
             ],
         ];
@@ -340,7 +340,7 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
 
         $expectedParams = [
             'json' => (object) [
-                'title'    => $questionText,
+                'title' => $questionText,
                 'metadata' => MetadataDataObject::create(),
             ],
         ];
@@ -483,7 +483,7 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $client->method("request")
             ->with("GET", QuestionBankAdapter::QUESTIONSETS, [
                 'query' => [
-                    'search'  => 'Nytt',
+                    'search' => 'Nytt',
                     'keyword' => 'fjell',
                 ],
             ])
@@ -501,7 +501,7 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $client->method("request")
             ->with("GET", QuestionBankAdapter::QUESTIONSETS, [
                 'query' => [
-                    'search'  => 'Nytt',
+                    'search' => 'Nytt',
                     'keyword' => 'keyword1+keyword2',
                 ],
             ])
@@ -519,7 +519,7 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $client->method("request")
             ->with("GET", QuestionBankAdapter::QUESTIONSETS, [
                 'query' => [
-                    'search'  => 'Nytt',
+                    'search' => 'Nytt',
                     'keyword' => 'keyword1 keyword2',
                 ],
             ])
