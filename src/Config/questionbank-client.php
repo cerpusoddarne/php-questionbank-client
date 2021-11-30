@@ -1,20 +1,16 @@
 <?php
 
+use Cerpus\QuestionBankClient\Adapters\QuestionBankAdapter;
+
 return [
     //default adapter for questionsets
     "default" => "questionbankservice",
-
     "adapters" => [
-
         "questionbankservice" => [
-            "handler" => \Cerpus\QuestionBankClient\Adapters\QuestionBankAdapter::class,
-            "base-url" => "",
-            "auth-client" => "none",
-            "auth-url" => "",
-            "auth-user" => "",
-            "auth-secret" => "",
-            "auth-token" => "",
-            "auth-token_secret" => "",
+            "handler"     => QuestionBankAdapter::class,
+            "base-url"    => env('QUESTIONBANK_BASE_URL'),
+            "auth-user"   => env('QUESTIONBANK_AUTH_USER'),
+            "auth-secret" => env('QUESTIONBANK_AUTH_SECRET'),
         ],
     ],
 ];
