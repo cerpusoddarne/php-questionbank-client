@@ -28,8 +28,7 @@ class SearchDataObject
 
     private function solveSearchPhrase($phrase)
     {
-
-        if (!is_array($phrase)) {
+        if (! is_array($phrase)) {
             return $phrase;
         }
 

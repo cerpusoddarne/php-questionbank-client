@@ -2,22 +2,22 @@
 
 namespace Cerpus\QuestionBankClientTests\Adapters;
 
+use Cerpus\QuestionBankClient\Adapters\QuestionBankAdapter;
 use Cerpus\QuestionBankClient\DataObjects\AnswerDataObject;
 use Cerpus\QuestionBankClient\DataObjects\MetadataDataObject;
 use Cerpus\QuestionBankClient\DataObjects\QuestionDataObject;
 use Cerpus\QuestionBankClient\DataObjects\QuestionsetDataObject;
 use Cerpus\QuestionBankClient\DataObjects\SearchDataObject;
+use Cerpus\QuestionBankClientTests\Utils\QuestionBankTestCase;
 use Cerpus\QuestionBankClientTests\Utils\Traits\WithFaker;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Collection;
 use Teapot\StatusCode;
-
-use Cerpus\QuestionBankClient\Adapters\QuestionBankAdapter;
-use Cerpus\QuestionBankClientTests\Utils\QuestionBankTestCase;
 
 class QuestionBankAdapterTest extends QuestionBankTestCase
 {
@@ -27,6 +27,7 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     {
         $mock = new MockHandler($responses);
         $handler = HandlerStack::create($mock);
+
         return new Client(['handler' => $handler]);
     }
 
@@ -52,7 +53,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     public function getQuestionsets_twoSets_thenSuccess()
     {
         $client = $this->getClient([
-            new Response(StatusCode::OK, [], '[{"metadata": {"keywords": ["progress"],"images": []},"id": "c2197f7c-668d-4464-b645-cb4068f7eade","title": "QS progress"},{"metadata": {"keywords": ["test"],"images": []},"id": "dd4c2d2f-6490-4611-9be8-df5d1c7c6eb2","title": "QS inmaking"}]'),
+            new Response(StatusCode::OK, [],
+                '[{"metadata": {"keywords": ["progress"],"images": []},"id": "c2197f7c-668d-4464-b645-cb4068f7eade","title": "QS progress"},{"metadata": {"keywords": ["test"],"images": []},"id": "dd4c2d2f-6490-4611-9be8-df5d1c7c6eb2","title": "QS inmaking"}]'),
         ]);
 
         $adapter = $this->getMockBuilder(QuestionBankAdapter::class)
@@ -75,7 +77,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     public function getQuestionsetWithoutQuestions()
     {
         $client = $this->getClient([
-            new Response(StatusCode::OK, [], '{"metadata": {"keywords": ["progress"],"images": []},"id": "c2197f7c-668d-4464-b645-cb4068f7eade","title": "QS progress"}'),
+            new Response(StatusCode::OK, [],
+                '{"metadata": {"keywords": ["progress"],"images": []},"id": "c2197f7c-668d-4464-b645-cb4068f7eade","title": "QS progress"}'),
         ]);
 
         /** @var ClientInterface $client */
@@ -92,7 +95,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     public function getQuestionsetWithQuestions()
     {
         $client = $this->getClient([
-            new Response(StatusCode::OK, [], '{"questionCount": 1, "metadata": {"keywords": ["progress"],"images": []},"id": "c2197f7c-668d-4464-b645-cb4068f7eade","title": "QS progress"}')
+            new Response(StatusCode::OK, [],
+                '{"questionCount": 1, "metadata": {"keywords": ["progress"],"images": []},"id": "c2197f7c-668d-4464-b645-cb4068f7eade","title": "QS progress"}'),
         ]);
 
         $adapter = $this->getMockBuilder(QuestionBankAdapter::class)
@@ -114,7 +118,7 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     public function getQuestions_empty_thenSuccess()
     {
         $client = $this->getClient([
-            new Response(StatusCode::OK, [], "[]")
+            new Response(StatusCode::OK, [], "[]"),
         ]);
 
         /** @var ClientInterface $client */
@@ -130,7 +134,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     public function getQuestions_threeQuestions_thenSuccess()
     {
         $client = $this->getClient([
-            new Response(StatusCode::OK, [], '[{"metadata":{"keywords":[],"images": []},"id":"37a3ebce-002c-4e74-b611-0cb6e2e91515","questionSetId":"dd4c2d2f-6490-4611-9be8-df5d1c7c6eb2","title":"QS progress 3"},{"metadata":{"keywords":["progress2"],"images": []},"id":"6bdeda3c-1169-47c5-b173-782e7f36f9fc","questionSetId":"dd4c2d2f-6490-4611-9be8-df5d1c7c6eb2","title":"QS progress 2"},{"metadata":{"keywords":["testquestion"],"images": []},"id":"a184acf1-4c78-4f43-9a44-aad294dcc146","questionSetId":"dd4c2d2f-6490-4611-9be8-df5d1c7c6eb2","title":"QS question"}]'),
+            new Response(StatusCode::OK, [],
+                '[{"metadata":{"keywords":[],"images": []},"id":"37a3ebce-002c-4e74-b611-0cb6e2e91515","questionSetId":"dd4c2d2f-6490-4611-9be8-df5d1c7c6eb2","title":"QS progress 3"},{"metadata":{"keywords":["progress2"],"images": []},"id":"6bdeda3c-1169-47c5-b173-782e7f36f9fc","questionSetId":"dd4c2d2f-6490-4611-9be8-df5d1c7c6eb2","title":"QS progress 2"},{"metadata":{"keywords":["testquestion"],"images": []},"id":"a184acf1-4c78-4f43-9a44-aad294dcc146","questionSetId":"dd4c2d2f-6490-4611-9be8-df5d1c7c6eb2","title":"QS question"}]'),
         ]);
 
         $adapter = $this->getMockBuilder(QuestionBankAdapter::class)
@@ -153,7 +158,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     public function getQuestionWithAnswers()
     {
         $client = $this->getClient([
-            new Response(StatusCode::OK, [], '{"metadata":{"keywords":[],"images": []},"id":"37a3ebce-002c-4e74-b611-0cb6e2e91515","questionSetId":"dd4c2d2f-6490-4611-9be8-df5d1c7c6eb2","title":"Existing question"}'),
+            new Response(StatusCode::OK, [],
+                '{"metadata":{"keywords":[],"images": []},"id":"37a3ebce-002c-4e74-b611-0cb6e2e91515","questionSetId":"dd4c2d2f-6490-4611-9be8-df5d1c7c6eb2","title":"Existing question"}'),
         ]);
 
         $adapter = $this->getMockBuilder(QuestionBankAdapter::class)
@@ -176,7 +182,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     public function getQuestionWithoutAnswers()
     {
         $client = $this->getClient([
-            new Response(StatusCode::OK, [], '{"metadata":{"keywords":[],"images": []},"id":"37a3ebce-002c-4e74-b611-0cb6e2e91515","questionSetId":"dd4c2d2f-6490-4611-9be8-df5d1c7c6eb2","title":"Existing question"}'),
+            new Response(StatusCode::OK, [],
+                '{"metadata":{"keywords":[],"images": []},"id":"37a3ebce-002c-4e74-b611-0cb6e2e91515","questionSetId":"dd4c2d2f-6490-4611-9be8-df5d1c7c6eb2","title":"Existing question"}'),
         ]);
 
         $adapter = $this->getMockBuilder(QuestionBankAdapter::class)
@@ -214,7 +221,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     public function getAnswers_twoAnswers_thenSuccess()
     {
         $client = $this->getClient([
-            new Response(StatusCode::OK, [], '[{"metadata":{"keywords":[],"images": []},"id":"7b937904-adfc-417a-bb7c-b9a7ad576709","questionId":"a184acf1-4c78-4f43-9a44-aad294dcc146","description":"QS answer 2","correctness":0},{"metadata":{"keywords":["testanswer"],"images": []},"id":"cebcf2f0-b233-4615-ac65-70d1af015f9a","questionId":"a184acf1-4c78-4f43-9a44-aad294dcc146","description":"QS answer","correctness":100}]'),
+            new Response(StatusCode::OK, [],
+                '[{"metadata":{"keywords":[],"images": []},"id":"7b937904-adfc-417a-bb7c-b9a7ad576709","questionId":"a184acf1-4c78-4f43-9a44-aad294dcc146","description":"QS answer 2","correctness":0},{"metadata":{"keywords":["testanswer"],"images": []},"id":"cebcf2f0-b233-4615-ac65-70d1af015f9a","questionId":"a184acf1-4c78-4f43-9a44-aad294dcc146","description":"QS answer","correctness":100}]'),
         ]);
 
         /** @var ClientInterface $client */
@@ -230,7 +238,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     public function getAnswer()
     {
         $client = $this->getClient([
-            new Response(StatusCode::OK, [], '{"metadata":{"keywords":[],"images": []},"id":"cebfd105-d5e5-4158-9568-2f8a1252ccb4","questionId":"a184acf1-4c78-4f43-9a44-aad294dcc146","description":"Existing answer","correctness":0}'),
+            new Response(StatusCode::OK, [],
+                '{"metadata":{"keywords":[],"images": []},"id":"cebfd105-d5e5-4158-9568-2f8a1252ccb4","questionId":"a184acf1-4c78-4f43-9a44-aad294dcc146","description":"Existing answer","correctness":0}'),
         ]);
 
         /** @var ClientInterface $client */
@@ -247,7 +256,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     public function createQuestionset()
     {
         $client = $this->getClient([
-            new Response(StatusCode::OK, [], '{"metadata":{"keywords":[],"images": []},"id":"d8884054-5fb4-4f4e-9fd6-6bceb85ee57d","title":"New Questionset"}'),
+            new Response(StatusCode::OK, [],
+                '{"metadata":{"keywords":[],"images": []},"id":"d8884054-5fb4-4f4e-9fd6-6bceb85ee57d","title":"New Questionset"}'),
         ]);
 
         /** @var ClientInterface $client */
@@ -265,7 +275,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     public function createQuestion()
     {
         $client = $this->getClient([
-            new Response(StatusCode::OK, [], '{"metadata":{"keywords":[],"images": []},"id":"d8884054-5fb4-4f4e-9fd6-6bceb85ee57d","title":"New Question","questionSetId":"cebfd105-d5e5-4158-9568-2f8a1252ccb4"}'),
+            new Response(StatusCode::OK, [],
+                '{"metadata":{"keywords":[],"images": []},"id":"d8884054-5fb4-4f4e-9fd6-6bceb85ee57d","title":"New Question","questionSetId":"cebfd105-d5e5-4158-9568-2f8a1252ccb4"}'),
         ]);
 
         /** @var ClientInterface $client */
@@ -287,10 +298,12 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $questionText = '<p>Albert Einstein formula: <span class="math_container">\(E=mc^2\)</span></p>';
         $question = QuestionDataObject::create($questionText, $questionsetId);
 
-        $expectedParams = ['json' => (object)[
-            'title' => '<p>Albert Einstein formula: $$E=mc^2$$</p>',
-            'metadata' => MetadataDataObject::create(),
-        ]];
+        $expectedParams = [
+            'json' => (object) [
+                'title' => '<p>Albert Einstein formula: $$E=mc^2$$</p>',
+                'metadata' => MetadataDataObject::create(),
+            ],
+        ];
 
         $client = $this->getMockBuilder(Client::class)
             ->setMethods(['request'])
@@ -301,7 +314,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
             ->method('request')
             ->with("POST", sprintf(QuestionBankAdapter::QUESTIONSET_QUESTIONS, $questionsetId), $expectedParams)
             ->willReturn(
-                new Response(StatusCode::OK, [], '{"metadata":{"keywords":[],"images": []},"id":"d8884054-5fb4-4f4e-9fd6-6bceb85ee57d","title":"<p>Albert Einstein formula: $$E=mc^2$$<\/p>","questionSetId":"cebfd105-d5e5-4158-9568-2f8a1252ccb4"}')
+                new Response(StatusCode::OK, [],
+                    '{"metadata":{"keywords":[],"images": []},"id":"d8884054-5fb4-4f4e-9fd6-6bceb85ee57d","title":"<p>Albert Einstein formula: $$E=mc^2$$<\/p>","questionSetId":"cebfd105-d5e5-4158-9568-2f8a1252ccb4"}')
             );
 
         /** @var ClientInterface $client */
@@ -324,10 +338,12 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $question = QuestionDataObject::create($questionText, $questionsetId);
         $question->stripMathContainerElements = false;
 
-        $expectedParams = ['json' => (object)[
-            'title' => $questionText,
-            'metadata' => MetadataDataObject::create(),
-        ]];
+        $expectedParams = [
+            'json' => (object) [
+                'title' => $questionText,
+                'metadata' => MetadataDataObject::create(),
+            ],
+        ];
 
         $client = $this->getMockBuilder(Client::class)
             ->setMethods(['request'])
@@ -338,7 +354,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
             ->method('request')
             ->with("POST", sprintf(QuestionBankAdapter::QUESTIONSET_QUESTIONS, $questionsetId), $expectedParams)
             ->willReturn(
-                new Response(StatusCode::OK, [], '{"metadata":{"keywords":[],"images": []},"id":"d8884054-5fb4-4f4e-9fd6-6bceb85ee57d","title":"<p>Albert Einstein formula: <span class=\"math_container\">\\\(E=mc^2\\\)<\/span><\/p>","questionSetId":"cebfd105-d5e5-4158-9568-2f8a1252ccb4"}')
+                new Response(StatusCode::OK, [],
+                    '{"metadata":{"keywords":[],"images": []},"id":"d8884054-5fb4-4f4e-9fd6-6bceb85ee57d","title":"<p>Albert Einstein formula: <span class=\"math_container\">\\\(E=mc^2\\\)<\/span><\/p>","questionSetId":"cebfd105-d5e5-4158-9568-2f8a1252ccb4"}')
             );
 
         /** @var ClientInterface $client */
@@ -357,7 +374,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     public function createAnswer()
     {
         $client = $this->getClient([
-            new Response(StatusCode::OK, [], '{"metadata":{"keywords":[],"images": []},"id":"cebfd105-d5e5-4158-9568-2f8a1252ccb4","questionId":"a184acf1-4c78-4f43-9a44-aad294dcc146","description":"New Answer","correctness":100}'),
+            new Response(StatusCode::OK, [],
+                '{"metadata":{"keywords":[],"images": []},"id":"cebfd105-d5e5-4158-9568-2f8a1252ccb4","questionId":"a184acf1-4c78-4f43-9a44-aad294dcc146","description":"New Answer","correctness":100}'),
         ]);
 
         /** @var ClientInterface $client */
@@ -375,7 +393,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     public function updateQuestionset()
     {
         $client = $this->getClient([
-            new Response(StatusCode::OK, [], '{"metadata":{"keywords":[],"images": []},"id":"d8884054-5fb4-4f4e-9fd6-6bceb85ee57d","title":"Updated Questionset"}'),
+            new Response(StatusCode::OK, [],
+                '{"metadata":{"keywords":[],"images": []},"id":"d8884054-5fb4-4f4e-9fd6-6bceb85ee57d","title":"Updated Questionset"}'),
         ]);
 
         /** @var ClientInterface $client */
@@ -392,7 +411,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     public function updateQuestion()
     {
         $client = $this->getClient([
-            new Response(StatusCode::OK, [], '{"metadata":{"keywords":[],"images": []},"id":"d8884054-5fb4-4f4e-9fd6-6bceb85ee57d","title":"Updated Question","questionSetId":"cebfd105-d5e5-4158-9568-2f8a1252ccb4"}'),
+            new Response(StatusCode::OK, [],
+                '{"metadata":{"keywords":[],"images": []},"id":"d8884054-5fb4-4f4e-9fd6-6bceb85ee57d","title":"Updated Question","questionSetId":"cebfd105-d5e5-4158-9568-2f8a1252ccb4"}'),
         ]);
 
         /** @var ClientInterface $client */
@@ -410,7 +430,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     public function updateAnswer()
     {
         $client = $this->getClient([
-            new Response(StatusCode::OK, [], '{"metadata":{"keywords":[],"images": []},"id":"cebfd105-d5e5-4158-9568-2f8a1252ccb4","questionId":"a184acf1-4c78-4f43-9a44-aad294dcc146","description":"Updated Answer","correctness":100}'),
+            new Response(StatusCode::OK, [],
+                '{"metadata":{"keywords":[],"images": []},"id":"cebfd105-d5e5-4158-9568-2f8a1252ccb4","questionId":"a184acf1-4c78-4f43-9a44-aad294dcc146","description":"Updated Answer","correctness":100}'),
         ]);
 
         /** @var ClientInterface $client */
@@ -431,7 +452,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $client = $this->createMock(ClientInterface::class);
         $client->method("request")
             ->with("GET", QuestionBankAdapter::QUESTIONSETS, ['query' => ['search' => 'Nytt']])
-            ->willReturn(new Response(StatusCode::OK, [], '[{"metadata":{"keywords":[],"images": []},"id":"cda71174-2d82-439a-bd4a-343e982cdaa9","title":"Nytt på nytt"},{"metadata":{"keywords":[],"images": []},"id":"b9da2705-4e8f-4d43-bb28-93bb3ba9d215","title":"Helt nytt"}]'));
+            ->willReturn(new Response(StatusCode::OK, [],
+                '[{"metadata":{"keywords":[],"images": []},"id":"cda71174-2d82-439a-bd4a-343e982cdaa9","title":"Nytt på nytt"},{"metadata":{"keywords":[],"images": []},"id":"b9da2705-4e8f-4d43-bb28-93bb3ba9d215","title":"Helt nytt"}]'));
 
         $search = SearchDataObject::create('search', 'Nytt');
         /** @var QuestionBankAdapter $adapter */
@@ -445,7 +467,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $client = $this->createMock(ClientInterface::class);
         $client->method("request")
             ->with("GET", QuestionBankAdapter::QUESTIONSETS, ['query' => ['search' => 'Nytt på']])
-            ->willReturn(new Response(StatusCode::OK, [], '[{"metadata":{"keywords":[],"images": []},"id":"cda71174-2d82-439a-bd4a-343e982cdaa9","title":"Nytt på nytt"}]'));
+            ->willReturn(new Response(StatusCode::OK, [],
+                '[{"metadata":{"keywords":[],"images": []},"id":"cda71174-2d82-439a-bd4a-343e982cdaa9","title":"Nytt på nytt"}]'));
 
         $search = SearchDataObject::create('search', 'Nytt på');
         /** @var QuestionBankAdapter $adapter */
@@ -458,15 +481,17 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
 
         $client = $this->createMock(ClientInterface::class);
         $client->method("request")
-            ->with("GET", QuestionBankAdapter::QUESTIONSETS, ['query' => [
-                'search' => 'Nytt',
-                'keyword' => 'fjell'
-            ]])
+            ->with("GET", QuestionBankAdapter::QUESTIONSETS, [
+                'query' => [
+                    'search' => 'Nytt',
+                    'keyword' => 'fjell',
+                ],
+            ])
             ->willReturn(new Response(StatusCode::OK, [], '[]'));
 
         $search = collect([
             SearchDataObject::create('search', 'Nytt'),
-            SearchDataObject::create('keyword', 'fjell')
+            SearchDataObject::create('keyword', 'fjell'),
         ]);
         /** @var QuestionBankAdapter $adapter */
         $adapter = new QuestionBankAdapter($client);
@@ -474,15 +499,17 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
 
         $client = $this->createMock(ClientInterface::class);
         $client->method("request")
-            ->with("GET", QuestionBankAdapter::QUESTIONSETS, ['query' => [
-                'search' => 'Nytt',
-                'keyword' => 'keyword1+keyword2'
-            ]])
+            ->with("GET", QuestionBankAdapter::QUESTIONSETS, [
+                'query' => [
+                    'search' => 'Nytt',
+                    'keyword' => 'keyword1+keyword2',
+                ],
+            ])
             ->willReturn(new Response(StatusCode::OK, [], '[]'));
 
         $search = collect([
             SearchDataObject::create('search', 'Nytt'),
-            SearchDataObject::create('keyword', ['keyword1', 'keyword2'])
+            SearchDataObject::create('keyword', ['keyword1', 'keyword2']),
         ]);
         /** @var QuestionBankAdapter $adapter */
         $adapter = new QuestionBankAdapter($client);
@@ -490,10 +517,12 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
 
         $client = $this->createMock(ClientInterface::class);
         $client->method("request")
-            ->with("GET", QuestionBankAdapter::QUESTIONSETS, ['query' => [
-                'search' => 'Nytt',
-                'keyword' => 'keyword1 keyword2'
-            ]])
+            ->with("GET", QuestionBankAdapter::QUESTIONSETS, [
+                'query' => [
+                    'search' => 'Nytt',
+                    'keyword' => 'keyword1 keyword2',
+                ],
+            ])
             ->willReturn(new Response(StatusCode::OK, [], '[]'));
 
         $search = collect([
@@ -511,8 +540,10 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
     public function getQuestionsWithSearch()
     {
         $client = $this->getClient([
-            new Response(StatusCode::OK, [], '[{"metadata": {"keywords": [],"images": []},"id": "6bdeda3c-1169-47c5-b173-782e7f36f9fc","questionSetId": "dd4c2d2f-6490-4611-9be8-df5d1c7c6eb2","title": "Updated question"}]'),
-            new Response(StatusCode::OK, [], '[{"metadata":{"keywords":[],"images": []},"id":"7b937904-adfc-417a-bb7c-b9a7ad576709","questionId":"6bdeda3c-1169-47c5-b173-782e7f36f9fc","description":"Answer 1","correctness":0},{"metadata":{"keywords":["testanswer"],"images": []},"id":"cebcf2f0-b233-4615-ac65-70d1af015f9a","questionId":"6bdeda3c-1169-47c5-b173-782e7f36f9fc","description":"Answer 2","correctness":100}]'),
+            new Response(StatusCode::OK, [],
+                '[{"metadata": {"keywords": [],"images": []},"id": "6bdeda3c-1169-47c5-b173-782e7f36f9fc","questionSetId": "dd4c2d2f-6490-4611-9be8-df5d1c7c6eb2","title": "Updated question"}]'),
+            new Response(StatusCode::OK, [],
+                '[{"metadata":{"keywords":[],"images": []},"id":"7b937904-adfc-417a-bb7c-b9a7ad576709","questionId":"6bdeda3c-1169-47c5-b173-782e7f36f9fc","description":"Answer 1","correctness":0},{"metadata":{"keywords":["testanswer"],"images": []},"id":"cebcf2f0-b233-4615-ac65-70d1af015f9a","questionId":"6bdeda3c-1169-47c5-b173-782e7f36f9fc","description":"Answer 2","correctness":100}]'),
             new Response(StatusCode::OK, [], '[]'),
         ]);
 
@@ -524,24 +555,25 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $question = $questions->first();
         $this->assertCount(1, $questions);
         $this->assertEquals(get_class($question), QuestionDataObject::class);
-        $this->assertAttributeEquals("Updated question", 'text', $question);
+        $this->assertEquals("Updated question", $question->text);
         $this->assertCount(2, $question->getAnswers());
 
         $search = SearchDataObject::create('search', 'NoHit');
         $newQuestions = $adapter->searchQuestions($search);
         $this->assertEquals(get_class($newQuestions), Collection::class);
         $this->assertCount(0, $newQuestions);
-
     }
 
     /**
      * @test
-     * @expectedException GuzzleHttp\Exception\RequestException
      */
     public function getQuestionsWithEmptySearchString()
     {
+        $this->expectException(RequestException::class);
+
         $client = $this->getClient([
-            new Response(StatusCode::BAD_REQUEST, [], '{"timestamp": "2018-07-02T11:05:54.215+0000","status": 400,"error": "Bad Request","message": "Need to specify either searchString, keywords or questionSetId","path": "/v1/questions"}'),
+            new Response(StatusCode::BAD_REQUEST, [],
+                '{"timestamp": "2018-07-02T11:05:54.215+0000","status": 400,"error": "Bad Request","message": "Need to specify either searchString, keywords or questionSetId","path": "/v1/questions"}'),
         ]);
 
         /** @var ClientInterface $client */
@@ -557,7 +589,8 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $client = $this->createMock(ClientInterface::class);
         $client->method("request")
             ->with("GET", QuestionBankAdapter::ANSWERS, ['query' => ['search' => 'Correct']])
-            ->willReturn(new Response(StatusCode::OK, [], '[{"metadata": {"keywords": [],"images": []},"id": "cebcf2f0-b233-4615-ac65-70d1af015f9a","questionId": "a184acf1-4c78-4f43-9a44-aad294dcc146","description": "Correct answer","correctness": 100}]'));
+            ->willReturn(new Response(StatusCode::OK, [],
+                '[{"metadata": {"keywords": [],"images": []},"id": "cebcf2f0-b233-4615-ac65-70d1af015f9a","questionId": "a184acf1-4c78-4f43-9a44-aad294dcc146","description": "Correct answer","correctness": 100}]'));
 
         $search = SearchDataObject::create('search', 'Correct');
         /** @var QuestionBankAdapter $adapter */
@@ -567,17 +600,18 @@ class QuestionBankAdapterTest extends QuestionBankTestCase
         $answer = $answers->first();
         $this->assertCount(1, $answers);
         $this->assertEquals(get_class($answer), AnswerDataObject::class);
-        $this->assertAttributeEquals("Correct answer", 'text', $answer);
+        $this->assertEquals("Correct answer", $answer->text);
     }
 
     /**
      * @test
-     * @expectedException GuzzleHttp\Exception\RequestException
      */
     public function getAnswersWithEmptySearchString()
     {
+        $this->expectException(RequestException::class);
         $client = $this->getClient([
-            new Response(StatusCode::BAD_REQUEST, [], '{"timestamp": "2018-07-02T11:20:27.615+0000","status": 400,"error": "Bad Request","message": "Need to specify either searchString, keywords or questionId","path": "/v1/answers"}'),
+            new Response(StatusCode::BAD_REQUEST, [],
+                '{"timestamp": "2018-07-02T11:20:27.615+0000","status": 400,"error": "Bad Request","message": "Need to specify either searchString, keywords or questionId","path": "/v1/answers"}'),
         ]);
 
         /** @var ClientInterface $client */

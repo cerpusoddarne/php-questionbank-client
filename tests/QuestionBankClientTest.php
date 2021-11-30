@@ -24,7 +24,7 @@ class QuestionBankClientTest extends TestCase
      */
     public function getConfigPath()
     {
-        $this->assertEquals(dirname(__DIR__) . '/src/Config/questionbank-client.php', QuestionBankClient::getConfigPath());
+        $this->assertEquals(dirname(__DIR__).'/src/Config/questionbank-client.php', QuestionBankClient::getConfigPath());
     }
 
 

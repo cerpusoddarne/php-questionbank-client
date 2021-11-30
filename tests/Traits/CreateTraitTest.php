@@ -93,7 +93,7 @@ class CreateTraitTest extends QuestionBankTestCase
         $truck2 = Truck::create([
             'color' => $color,
             'maxWeight' => $maxWeight,
-            'full' => true
+            'full' => true,
         ]);
         $this->assertEquals($truck, $truck2);
     }
@@ -116,7 +116,7 @@ class CreateTraitTest extends QuestionBankTestCase
 
         /** @var Cargo $cargo */
         $cargo = Cargo::create([
-            'weight' => $weight
+            'weight' => $weight,
         ]);
 
         $truck->addCargo($cargo);
@@ -131,7 +131,7 @@ class CreateTraitTest extends QuestionBankTestCase
                     'weight' => $weight,
                     'fragile' => false,
                     'content' => [],
-                ]
+                ],
             ],
             'full' => false,
         ];

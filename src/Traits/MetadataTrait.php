@@ -10,7 +10,7 @@ trait MetadataTrait
     private $metadata;
 
     /**
-     * @param MetadataDataObject $metadata
+     * @param  MetadataDataObject  $metadata
      */
     public function addMetadata(MetadataDataObject $metadata)
     {
@@ -30,7 +30,7 @@ trait MetadataTrait
      */
     public function getImages()
     {
-        if( !empty($this->metadata->images)){
+        if (! empty($this->metadata->images)) {
             return $this->metadata->images;
         }
         return [];
@@ -42,10 +42,9 @@ trait MetadataTrait
      */
     public function getImageAt($index)
     {
-        if( !empty($this->metadata->images[$index])){
+        if (! empty($this->metadata->images[$index])) {
             return $this->metadata->images[$index];
         }
         return null;
-
     }
 }
