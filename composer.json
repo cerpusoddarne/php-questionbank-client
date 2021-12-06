@@ -2,17 +2,19 @@
   "name": "cerpus/questionbank-client",
   "description": "Client to talk do the Cerpus Questionbank Service",
   "license": "GPL-3.0-only",
+  "minimum-stability": "stable",
+  "prefer-stable": true,
   "require": {
-    "php": ">=7.4",
+    "php": "^7.4 || ^8.0",
     "ext-json": "*",
-    "cerpus/cerpushelper": "^1.5",
+    "cerpus/cerpushelper": "^2.0",
     "illuminate/support": "*"
   },
   "require-dev": {
     "shrikeh/teapot": "^2.3",
     "mockery/mockery": "^1.4",
-    "fzaninotto/faker": "^1.9",
-    "phpunit/phpunit": "^9.5"
+    "phpunit/phpunit": "^9.5",
+    "fakerphp/faker": "^1.16"
   },
   "authors": [
     {
