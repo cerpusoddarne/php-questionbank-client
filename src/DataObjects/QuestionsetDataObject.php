@@ -17,7 +17,7 @@ class QuestionsetDataObject extends BaseDataObject
 {
     use CreateTrait, MetadataTrait;
 
-    public $title, $id, $questionCount;
+    public $title, $id, $questionCount, $ownerId;
 
     private $questions;
 
@@ -54,6 +54,16 @@ class QuestionsetDataObject extends BaseDataObject
     public function getMetadata()
     {
         return $this->metadata;
+    }
+
+    public function addOwnerId(string $ownerId)
+    {
+        $this->ownerId = $ownerId;
+    }
+
+    public function getOwnerId()
+    {
+        return $this->ownerId;
     }
 
 }

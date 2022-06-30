@@ -19,7 +19,7 @@ class QuestionsetsDataObject extends BaseDataObject
 
     public $id;
 
-    private $questionsets;
+    private $questionsets, $ownerId;
 
     public $guarded = ['questionsets', 'metadata'];
 
@@ -43,6 +43,15 @@ class QuestionsetsDataObject extends BaseDataObject
     public function getQuestionsets()
     {
         return $this->questionsets;
+    }
+    public function addOwnerId(string $ownerId)
+    {
+        $this->ownerId = $ownerId;
+    }
+
+    public function getOwnerId()
+    {
+        return $this->ownerId;
     }
 
 }

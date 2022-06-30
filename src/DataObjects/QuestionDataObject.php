@@ -17,7 +17,7 @@ class QuestionDataObject extends BaseDataObject
 {
     use CreateTrait, MetadataTrait;
 
-    public $text, $questionSetId, $id;
+    public $text, $questionSetId, $id, $ownerId;
     public $stripMathContainerElements = true;
 
     private $answers;
@@ -48,4 +48,14 @@ class QuestionDataObject extends BaseDataObject
             $this->addAnswer($answer);
         });
     }
+    public function addOwnerId(string $ownerId)
+    {
+        $this->ownerId = $ownerId;
+    }
+
+    public function getOwnerId()
+    {
+        return $this->ownerId;
+    }
+
 }
